@@ -1,0 +1,136 @@
+/*Basic styles for consistency*/
+body,h1,h2,h3,h4,h5,h6,ul,ol,li,form,fieldset,legend{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body{
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    background-image: url('bg2.jpg');
+    color: azure;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+nav{
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+}
+nav a{
+    color: floralwhite;
+    text-decoration: none;
+    margin: 0 15px;
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: color 0.3s ease, background 0.3s ease;
+}
+nav a:hover{
+    background-color: rgb(43, 62, 101);
+    color: #7c829c;
+}
+
+/*Title Styling*/
+h1{
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+    color: azure;
+}
+/*Form Styling*/
+form{
+    display: flex;
+    flex-direction: column;
+}
+select,button{
+    margin-bottom: 10px;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 5px;
+    color: #333;
+    outline: none;
+    transition: border 0.3 ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(5px);
+}
+select:hover, select:focus{
+    border-color: blue;
+    box-shadow: 0 0 5px skyblue; /*Glass effect on focus*/
+}
+
+/*Button Styling*/
+button{
+    background-color: midnightblue;
+    color: white;
+    font-family:inherit;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    text-align: center;
+    display: inline-block;
+    font-size: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+button:hover{
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transform: translateY(-5px) scale(1.05);
+}
+button::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.15);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: inherit;
+}
+button:hover::before{
+    opacity: 1;
+}
+button:active{
+    transform: translateY(2px) scale(0.98);
+}
+
+/*Glassmorphism container*/
+.container{
+    max-width: 600px;
+    margin: 30px auto;
+    padding: 20px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+/*Responsive adjustments*/
+@media (max-width: 600px){
+    .container{
+        width: 90%;
+        padding: 15px;
+    }
+    h1{
+        font-size: 20px;
+    }
+    button{
+        font-size: 14px;
+        padding: 8px;
+    }
+    select{
+        font-size: 14px;
+        padding: 8px;
+    }
+}

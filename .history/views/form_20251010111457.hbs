@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Data</title>
+    <link rel="stylesheet" href="/styles/style4.css">
+</head>
+<body>
+    <nav>
+        <a href="/index">Back</a>
+    </nav>
+    <div class="container">
+        <h1>Submit Data to {{SelectedTable}}</h1>
+        {{#if message}}
+            <div class="message {{messageType}}">{{message}}</div>
+        {{/if}}
+
+        <form id="dataForm">
+            <input type="hidden" name="database" value="{{selectedDB}}">
+            <input type="hidden" name="table" value="{{selectedTable}}">
+
+            {{#each columns}}
+                <div class="form-group">
+                    <label for="{{this.Field}}">{{this.Field}}:</label>
+                    {{!--Case 1: "Type" field (radio buttons)--}}
+                    {{#if (eq this.Field "Type")}}
+                        <div class="radio-group">
+                            <label><input type="radio" name="Type" value="Series" required>Series</label>
+                            <label><input type="radio" name="Type" value="Movie" required>Movie</label>
+                        </div>
+
+                        {{!--Case 2: Foreign key column (dropdown)--}}
+                        {{else if this.isForeignKey}}
+                            <select id="{{this.Field}}" name="{{this.Field}}">
+                            <option value="">-- Select --</option>
+                            {{#each this.dropdownValues}}
+                            <option value="{{this}}">{{this}}</option>
+                        {{/each}}
+                        </select>
+
+                        {{!--Case 3: Normal text input--}}
+                        {{else}}
+                            <input type="text" id="{{this.Field}}" name="{{this.Field}}">
+                    
+                </div>
+        </form>
+    </div>
+    
+</body>
+</html>

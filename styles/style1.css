@@ -1,0 +1,111 @@
+body{
+    font-family: fantasy;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100vh;
+    background-image: url('bg1.jpg');
+}
+h1{
+    color: whitesmoke;
+    font-size: 3em;
+    margin-top: 0;
+    text-align: center;
+}
+
+button{
+    padding: 15px 32px;
+    color: aliceblue;
+    font-family:inherit;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    text-align: center;
+    display: inline-block;
+    font-size: 16px;
+    position: relative;
+    overflow: hidden;
+    background-color: inherit; /*Keep original color*/
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /*Smooth hover transition*/
+}
+/*Initial Button background colors*/
+#btn1{
+    background-color: palevioletred;
+}
+#btn2{
+    background-color: indianred;
+}
+#btn3{
+    background-color: indigo;
+}
+/*Glassmorphism on hover*/
+button:hover{
+    backdrop-filter: blur(10px); /*Frosted glass effect*/
+    -webkit-backdrop-filter: blur(10px); /*For Safari*/
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3); /*Deep shadow for more dimension*/
+    transform: translateY(-5px) scale(1.05); /*Lift the buttons a bit*/
+}
+
+button::before{
+    /*Strong glassy overlay for hover effect*/
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.15); /*Slight overlay for glass look*/
+    opacity: 0;
+    transition: opacity 0.3s ease; /*Smooth transition*/
+    border-radius: inherit; /*Keep same border radius as the button*/
+}
+button:hover::before{
+    opacity: 1; /*Fade in the overlay on hover*/
+}
+button:active{
+    /*Subtle press-in effect*/
+    transform: translateY(2px) scale(0.98);
+}
+
+.container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 50px;
+    margin-bottom: 15px;
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/*Responsive adjustments*/
+@media (max-width: 600px){
+    body{
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    h1{
+        font-size: 2em;
+    }
+    button{
+        width: 100%;
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    .container{
+        width: 90%;
+        padding: 15px;
+    }
+}

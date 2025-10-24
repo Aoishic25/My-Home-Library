@@ -1,0 +1,149 @@
+/*Basic styles for consistency*/
+body{
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-image: url('bg3.jpg');
+}
+
+/*Navbar with enhanced glassmorphism*/
+.navbar{
+    background: none;
+    color: #fff;
+    padding: 15px 0;
+}
+.navbar .container{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.navbar h1{
+    margin: 0;
+    font-size: 24px;
+}
+.navbar a{
+    color: aliceblue;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+.navbar a:hover{
+    background: rgba(170,170,170,0.5);
+    transform: translateY(-2px);
+}
+
+.container{
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 25px;
+    background: rgba(255,255,255,0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+}
+h1{
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: azure;
+}
+
+/*List Styling*/
+ul{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+li{
+    margin-bottom: 12px;
+    color: #333;
+}
+
+/*Form Styling*/
+form{
+    margin-top: 20px;
+}
+select{
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(204,204,204,0.8);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: border-color 0.3s ease;
+}
+select:hover, select:focus{
+    border-color: blue;
+    box-shadow: 0 0 5px skyblue; /*Glass effect on focus*/
+}
+
+/*Button styling*/
+button{
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    background-color: blue;
+    color: white;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+button:hover{
+    backdrop-filter: blur(10px); /*Frosted glass effect*/
+    -webkit-backdrop-filter: blur(10px); /*For Safari*/
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3); /*Deep shadow for more dimension*/
+    transform: translateY(-5px) scale(1.05); /*Lift the buttons a bit*/
+}
+button::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.15);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: inherit;
+}
+button:hover::before{
+    opacity: 1;
+}
+button:active{
+    transform: scale(0.98);
+}
+
+/*Responsive adjustments*/
+@media (max-width: 600px){
+    body{
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    h1{
+        font-size: 2em;
+    }
+    button{
+        width: 100%;
+        padding: 12px;
+        font-size: 18px;
+    }
+    .container{
+        width: 90%;
+        padding: 15px;
+    }
+    h1{
+        font-size: 20px;
+    }
+    ul{
+        padding: 0 15px;
+    }
+    li{
+        margin-bottom: 10px;
+    }
+}

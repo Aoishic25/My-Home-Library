@@ -1,0 +1,153 @@
+/*Basic styles for consistency*/
+body,h1,h2,h3,h4,h5,h6,ul,ol,li,form,fieldset,legend{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body{
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    color: cornflowerblue;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-image: url('bg5.jpg');
+}
+
+nav{
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+}
+nav a{
+    color: floralwhite;
+    text-decoration: none;
+    margin: 0 15px;
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: color 0.3s ease, background 0.3s ease;
+}
+nav a:hover{
+    background-color: rgb(63, 68, 134);
+    color: #858daf;
+}
+
+/*Page title*/
+h1{
+    font-weight: bold;
+    font-size: 28px;
+    text-align: center;
+    color: slateblue;
+    margin-bottom: 30px;
+}
+h2{
+    font-weight: bold;
+    font-size: 28px;
+    text-align: center;
+    color: lightskyblue;
+    margin-bottom: 30px;
+}
+
+/*Dropdown styling*/
+select{
+    width: 300px;
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(204,204,204,0.7);
+    border-radius: 5px;
+    background: rgba(255,255,255,0.7);
+    color: #333;
+    outline: none;
+    transition: border 0.3 ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(5px);
+}
+select:hover, select:focus{
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0,123,255,0.5); /*Glass effect on focus*/
+}
+
+/*Button styling*/
+button{
+    display: block;
+    width: 100px;
+    padding: 10px;
+    background: royalblue;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+button:hover{
+    backdrop-filter: blur(10px); /*Frosted glass effect*/
+    -webkit-backdrop-filter: blur(10px); /*For Safari*/
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3); /*Deep shadow for more dimension*/
+    transform: translateY(-3px); /*Lift the buttons a bit*/
+}
+button::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.15);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: inherit;
+}
+button:hover::before{
+    opacity: 1;
+}
+button:active{
+    transform: scale(0.98);
+}
+
+/*Result table styling*/
+table{
+    width: 500px;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    backdrop-filter: blue(5px);
+}
+
+/*Table headings*/
+th{
+    padding: 15px;
+    font-weight: bold;
+    background: rgba(255,255,255,0.3);
+    color: snow;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    box-shadow: inset 0 -2px 10px rgba(0,0,0,0.2);
+}
+
+/*Table cells*/
+td{
+    padding: 12px;
+    text-align: left;
+    background: rgba(255,255,255,0.2);
+    color: snow;
+    transition: background-color 0.3s ease;
+}
+tr:hover td{
+    background-color: rgba(255,255,255,0.35);
+}
+
+/*Responsive adjustments*/
+@media (max-width: 600px){
+    table{
+        width: 100%;
+    }
+}

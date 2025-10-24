@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tables</title>
+    <link rel="stylesheet" href="/style3.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1><a href="/index">Back</a></h1>
+        </div>
+    </nav>
+    <div class="container">
+        <h1>Tables in {{selectedDB}}</h1>
+        <form action="/form" method="post">
+            <input type="hidden" name="database" value="{{selectedDB}}">
+            <select name="table" id="table">
+                {{#each tables}}
+                <option value="{{this}}">{{this}}</option>
+                {{/each}}
+            </select>
+            <button type="submit">Select Table</button>
+        </form>
+    </div>
+</body>
+</html>
+

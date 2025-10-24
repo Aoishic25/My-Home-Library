@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Data</title>
+    <link rel="stylesheet" href="/style2.css">
+</head>
+<body>
+    <nav>
+        <a href="/">Back</a>
+    </nav>
+    <div class="container">
+        <h1>Select a Database</h1>
+        <form action="/tables" method="post">
+            <select name="database" id="database">
+                {{#each databases}}
+                <option value="{{this}}">{{this}}</option>
+                {{/each}}
+            </select>
+            <button type="submit">Go!</button>
+        </form>
+    </div>
+</body>
+</html>
