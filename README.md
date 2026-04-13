@@ -3,15 +3,6 @@
 This is a personal web application for cataloguing and browsing different collections, including books, media, and name references,
 organized by genre, category, and author.
 
-# Table of Contents
-
-Overview
-Tech Stack
-Project Structure
-Databases
-Getting Started
-Features
-
 ## Overview
 
 My Home Library is a Node.js web application that serves as a personal digital catalogue. It connects to multiple MySQL databases to 
