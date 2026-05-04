@@ -12,6 +12,9 @@
         <button id="btn1" onclick="openPhpMyAdmin()">{{createDB}}</button>
         <button id="btn2" onclick="openlocalhost()">{{addDatabutton}}</button>
         <button id="btn3" onclick="openSearch()">Search</button>
+        <button id="btn4" onclick="openAnimeManga()">Anime & Manga</button>
+        <button id="btn5" onclick="openWatchlist()">Watchlist</button>
+        <button id="btn6" onclick="openNames()">Names Dictionary</button>
     </div>
     <script>
         function openPhpMyAdmin() {
@@ -25,6 +28,18 @@
         
         function openSearch() {
             window.location.href="http://localhost:3000/search";
+        }
+
+        function openAnimeManga() {
+            window.location.href="http://localhost:3000/anime-manga";
+        }
+
+        function openWatchlist() {
+            window.location.href="http://localhost:3000/watchlist";
+        }
+
+        function openNames() {
+            window.location.href="http://localhost:3000/names";
         }
     </script>
 </body>

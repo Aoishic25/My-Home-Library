@@ -1,4 +1,4 @@
-# 📚 My Home Library
+# My Home Library
 
 A personal web application for cataloguing and browsing a home library collection — including books, media, and name references — organized by genre, category, and author.
 

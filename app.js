@@ -4,10 +4,27 @@ const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const exphbs = require('express-handlebars');
 const mysql = require('mysql2');
+const path=require('path');
 
 const app = express();
 const port = 3000;
+const livereload=require('livereload');
+const connectLiveReload=require('connect-livereload');
 dotenv.config({ path: './.env' });
+
+//Create livereload server
+const liveReloadServer=livereload.createServer();
+liveReloadServer.watch(path.join(__dirname,'views'));
+
+//Wait for the server to restart, then refresh the browser
+liveReloadServer.server.once("connection",()=>{
+    setTimeout(()=>{
+        liveReloadServer.refresh("/");
+    },100);
+});
+
+//Add middleware to inject the livereload script into the pages
+app.use(connectLiveReload());
 
 // Use cors middleware
 app.use(cors());
@@ -300,6 +317,67 @@ app.post('/submit', (req, res) => {
                 messageType: 'success'
             });
         });
+    });
+});
+
+// Route to fetch Anime and Manga titles
+app.get('/anime-manga',(req,res)=>{
+    conn.query(`SELECT * FROM Collection.Anime`,(err,animeResults)=>{
+        if (err){
+            console.error('Error fetching anime:',err);
+            return res.status(500).send('Error fetching anime data');
+        }
+        conn.query(`SELECT * FROM Collection.Manga`,(err,mangaResults)=>{
+            if (err){
+                console.error('Error fetching manga:',err);
+                return res.status(500).send('Error fetching manga data');
+            }
+            res.render('anime-manga',{
+                anime:animeResults,
+                manga:mangaResults
+            });
+        });
+    });
+});
+
+//Route to fetch Show and Movie titles
+app.get('/watchlist',(req,res)=>{
+    conn.query(`SELECT * FROM Collection.Shows`,(err,showsResults)=>{
+        if (err){
+            console.error('Error fetching shows:',err);
+            return res.status(500).send('Error fetching shows:',err);
+            return res.status(500).send('Error fetching shows data');
+        }
+        conn.query(`SELECT * FROM Collection.Movies`,(err,moviesResults)=>{
+            if (err){
+                console.error('Error fetching movies:',err);
+                return res.status(500).send('Error fetching movies data');
+            }
+            res.render('watchlist',{
+                shows:showsResults,
+                movies:moviesResults
+            });
+        });
+    });
+});
+
+// Route to fetch Names from all tables in the Name DB
+app.get('/names',(reg,res)=>{
+    res.render('names');
+});
+
+app.get('/fetch-names',(req,res)=>{
+    const table=req.query.table;
+    const validTables=['Male','Female','Unisex','Latin','Japanese'];
+    if (!validTables.includes(table)){
+        return res.status(400).json({error:'Invalid table selected'});
+    }
+    conn.query(`SELECT * FROM NAMES.${table}`,(err,results)=>{
+        if (err){
+            console.error('Error fetching names:',err);
+            return res.status(500).json({error:'Error fetching names'});
+        }
+        res.json(results);
     });
 });
 

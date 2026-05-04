@@ -39,6 +39,7 @@ h1{
     margin-bottom: 20px;
     text-align: center;
     color: azure;
+    letter-spacing: 0.05em;
 }
 /*Form Styling*/
 form{
