@@ -8,6 +8,7 @@ body{
     justify-content: flex-start;
     height: 100vh;
     background-image: url('bg1.jpg');
+    background-size: cover;
 }
 h1{
     color: whitesmoke;
