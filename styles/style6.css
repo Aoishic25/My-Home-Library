@@ -36,7 +36,6 @@ header{
     border-radius: 4px;
     font-size: 14px;
     transition: color 0.3s ease, background 0.3s ease;
-    border-radius: 3px;
 }
 .back-btn:hover{
     background: darkcyan;
@@ -60,11 +59,11 @@ h1{
 }
 .tab-btn{
     padding: 0.65rem 2rem;
-    background: rgba(5,20,35,0.45);
+    background: rgba(5, 20, 35, 0.45);
     border: 1px solid rgba(255,255,255,0.12);
     border-bottom: none;
     color: rgba(255,255,255,0.45);
-    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     font-size: 0.82rem;
     letter-spacing: 0.08em;
     cursor: pointer;
@@ -73,7 +72,7 @@ h1{
     transition: all 0.2s;
 }
 .tab-btn:first-child{
-    border-radius: 8px 0 0 0;
+    border-radius: 8px 0 0 0; 
 }
 .tab-btn:last-child{
     border-radius: 0 8px 0 0;
@@ -99,10 +98,10 @@ h1{
 
 /*Table Wrap (Glass card)*/
 .table-wrap{
-    background: rgba(5,20,35,0.55);
+    background: rgba(65,81,78,0.55);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255,255,255,0.13);
+    border: 1px solid rgba(255,255,255,0.15);
     border-radius: 0 10px 10px 10px;
     overflow-x: auto;
     overflow: auto;
@@ -139,7 +138,7 @@ tr:last-child td{
     border-bottom: none;
 }
 tbody tr:hover td{
-    background: rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.12);
     color: azure;
 }
 
@@ -156,7 +155,7 @@ tbody tr:hover td{
 }
 .badge-series{
     background: rgba(95,202,138,0.3);
-    border: 1px solid rgba(95,202,138,0.4);
+    border: 1px solid rgba(95 202,138,0.4);
     color: #5fca8a;
 }
 .badge-movie{
@@ -165,7 +164,7 @@ tbody tr:hover td{
     color: #a07fdb;
 }
 .null-val{
-    color: rgba(255,255,255,0.3);
+    color: rgba(255, 255, 255, 0.3);
     font-style: italic;
     font-size: 0.82rem;
 }
@@ -174,7 +173,7 @@ tbody tr:hover td{
     font-size: 0.8rem;
 }
 
-/*Responsive Breakpoints*/
+/*Responsive Breakpoint*/
 @media (max-width: 768px){
     header{
         padding: 1rem 1.2rem;
@@ -182,7 +181,7 @@ tbody tr:hover td{
     .tabs{
         padding: 1.5rem 1.2rem 0;
     }
-    tab-btn{
+    .tab-btn{
         padding: 0.55rem 1.2rem;
         font-size: 0.75rem;
     }
@@ -198,3 +197,4 @@ tbody tr:hover td{
         padding: 0.15rem 0.45rem;
     }
 }
+

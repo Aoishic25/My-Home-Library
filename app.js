@@ -10,13 +10,14 @@ const app = express();
 const port = 3000;
 const livereload=require('livereload');
 const connectLiveReload=require('connect-livereload');
+const { error } = require('console');
 dotenv.config({ path: './.env' });
 
 //Create livereload server
 const liveReloadServer=livereload.createServer();
 liveReloadServer.watch(path.join(__dirname,'views'));
 
-//Wait for the server to restart, then refresh the browser
+//Wait for server to restart, then refresh the browser
 liveReloadServer.server.once("connection",()=>{
     setTimeout(()=>{
         liveReloadServer.refresh("/");
@@ -320,7 +321,7 @@ app.post('/submit', (req, res) => {
     });
 });
 
-// Route to fetch Anime and Manga titles
+//Route to fetch Anime and Manga titles
 app.get('/anime-manga',(req,res)=>{
     conn.query(`SELECT * FROM Collection.Anime`,(err,animeResults)=>{
         if (err){
@@ -344,11 +345,11 @@ app.get('/anime-manga',(req,res)=>{
 app.get('/watchlist',(req,res)=>{
     conn.query(`SELECT * FROM Collection.Shows`,(err,showsResults)=>{
         if (err){
-            console.error('Error fetching shows:',err);
+            console.error('Error fetching Shows:',err);
             return res.status(500).send('Error fetching shows:',err);
             return res.status(500).send('Error fetching shows data');
         }
-        conn.query(`SELECT * FROM Collection.Movies`,(err,moviesResults)=>{
+        conn.query(`SELECT * FORM Collection.Movies`,(err,moviesResults)=>{
             if (err){
                 console.error('Error fetching movies:',err);
                 return res.status(500).send('Error fetching movies data');
@@ -361,18 +362,14 @@ app.get('/watchlist',(req,res)=>{
     });
 });
 
-// Route to fetch Names from all tables in the Name DB
+//Route to fetch Names from all tables in the Name DB
 app.get('/names',(reg,res)=>{
-    res.render('names');
-});
-
-app.get('/fetch-names',(req,res)=>{
     const table=req.query.table;
     const validTables=['Male','Female','Unisex','Latin','Japanese'];
-    if (!validTables.includes(table)){
+    if (!validTables.includes(tables)){
         return res.status(400).json({error:'Invalid table selected'});
     }
-    conn.query(`SELECT * FROM NAMES.${table}`,(err,results)=>{
+    conn.query(`SELECT * FROM Names.${table}`,(err,results)=>{
         if (err){
             console.error('Error fetching names:',err);
             return res.status(500).json({error:'Error fetching names'});
