@@ -7,7 +7,7 @@
 }
 
 body{
-    background-image: url('bg6.jpg');
+    background-image: url('bg7.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -23,7 +23,7 @@ header{
     align-items: center;
     gap: 1rem;
     padding: 1.2rem 2.5rem;
-    background: rgba(5,20,35,0.55);
+    background: rgba(51,60,83,0.55);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(255,255,255,0.12);
@@ -38,16 +38,16 @@ header{
     transition: color 0.3s ease, background 0.3s ease;
 }
 .back-btn:hover{
-    background: darkcyan;
-    color: azure;
+    background: darkslateblue;
+    color: lightcyan;
 }
 h1{
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     font-size: 1.6rem;
     font-weight: bold;
-    color: dodgerblue;
+    color: deepskyblue;
     letter-spacing: 0.05em;
-    text-shadow: 0 0 24px rgba(135,206,235,1);
+    text-shadow: 0 0 24px rgb(129, 237, 183);
 }
 
 /*Tabs*/
@@ -55,7 +55,6 @@ h1{
     display: flex;
     padding: 2rem 2.5rem 0;
     flex-wrap: wrap;
-    gap: 0;
 }
 .tab-btn{
     padding: 0.65rem 2rem;
@@ -83,8 +82,8 @@ h1{
     border-color: rgba(255,255,255,0.35);
 }
 .tab-btn:hover:not(.active){
-    background: rgba(200,169,110,0.15);
-    color: rgba(127,255,212,0.75);
+    background: rgba(95, 78, 67, 0.5);
+    color: rgb(249,206,148,9);
 }
 
 /*Tab content*/
@@ -98,14 +97,14 @@ h1{
 
 /*Table Wrap (Glass card)*/
 .table-wrap{
-    background: rgba(65,81,78,0.55);
+    background: rgba(123,99,85,0.45);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255,255,255,0.15);
     border-radius: 0 10px 10px 10px;
     overflow-x: auto;
     overflow: auto;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4),
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45),
         inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
@@ -117,60 +116,38 @@ table{
     font-size: 0.9rem;
 }
 thead{
-    background: rgba(200,169,110,0.08);
-    border-bottom: 1px solid rgba(200,169,110,0.2);
+    background: rgba(200,149,110,0.1);
+    border-bottom: 1px solid rgba(200,169,110,0.22);
 }
 th{
     font-size: 0.75rem;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     padding: 0.9rem 1.2rem;
     text-align: left;
     white-space: nowrap;
-    text-shadow: 0 0 10px rgba(135,206,235,1);
+    text-shadow: 0 0 10px lightgoldenrodyellow;
 }
 td{
     padding: 0.7rem 1.2rem;
     border-bottom: 1px solid rgba(255,255,255,0.06);
     color: whitesmoke;
-    white-space: nowrap;
 }
 tr:last-child td{
     border-bottom: none;
 }
 tbody tr:hover td{
-    background: rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.2);
     color: azure;
-}
-
-/*Badges*/
-.badge{
-    display: inline-block;
-    padding: 0.2rem 0.6rem;
-    border-radius: 20px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    white-space: nowrap;
-}
-.badge-series{
-    background: rgba(95,202,138,0.3);
-    border: 1px solid rgba(95 202,138,0.4);
-    color: #5fca8a;
-}
-.badge-movie{
-    background: rgba(160,127,219,0.18);
-    border: 1px solid rgba(160,127,219,0.4);
-    color: #a07fdb;
-}
-.null-val{
-    color: rgba(255, 255, 255, 0.3);
-    font-style: italic;
-    font-size: 0.82rem;
 }
 .row-no{
     color: rgba(255,255,255,0.3);
     font-size: 0.8rem;
+}
+.empty{
+    padding: 3rem;
+    text-align: center;
+    color: rgba(255,255,255,0.3);
+    font-style: italic;
 }
 
 /*Responsive Breakpoint*/
@@ -192,8 +169,20 @@ tbody tr:hover td{
         padding: 0.5rem 0.6rem;
         font-size: 0.75rem;
     }
-    .badge{
-        font-size: 0.62rem;
-        padding: 0.15rem 0.45rem;
+}
+@media (max-width: 480px){
+    header{
+        padding: 0.9rem 1rem;
+        gap: 0.75rem;
+    }
+    .tabs{
+        padding: 1rem 1rem 0;
+    }
+    .tab-content{
+        padding: 0 1rem 2rem;
+    }
+    th,td{
+        padding: 0.5rem 0.6rem;
+        font-size: 0.75rem;
     }
 }

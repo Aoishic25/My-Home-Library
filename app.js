@@ -15,7 +15,12 @@ dotenv.config({ path: './.env' });
 
 //Create livereload server
 const liveReloadServer=livereload.createServer();
-liveReloadServer.watch(path.join(__dirname,'views'));
+liveReloadServer.watch([
+    path.join(__dirname,'views'),
+    path.join(__dirname,'styles'),
+    path.join(__dirname,'assets'),
+    path.join(__dirname,'app.js'),
+]);
 
 //Wait for server to restart, then refresh the browser
 liveReloadServer.server.once("connection",()=>{
@@ -346,10 +351,9 @@ app.get('/watchlist',(req,res)=>{
     conn.query(`SELECT * FROM Collection.Shows`,(err,showsResults)=>{
         if (err){
             console.error('Error fetching Shows:',err);
-            return res.status(500).send('Error fetching shows:',err);
             return res.status(500).send('Error fetching shows data');
         }
-        conn.query(`SELECT * FORM Collection.Movies`,(err,moviesResults)=>{
+        conn.query(`SELECT * FROM Collection.Movies`,(err,moviesResults)=>{
             if (err){
                 console.error('Error fetching movies:',err);
                 return res.status(500).send('Error fetching movies data');
@@ -363,10 +367,10 @@ app.get('/watchlist',(req,res)=>{
 });
 
 //Route to fetch Names from all tables in the Name DB
-app.get('/names',(reg,res)=>{
+app.get('/names',(reQ,res)=>{
     const table=req.query.table;
     const validTables=['Male','Female','Unisex','Latin','Japanese'];
-    if (!validTables.includes(tables)){
+    if (!validTables.includes(table)){
         return res.status(400).json({error:'Invalid table selected'});
     }
     conn.query(`SELECT * FROM Names.${table}`,(err,results)=>{
