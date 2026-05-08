@@ -1,0 +1,237 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    background-image: url('bg8.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    color: white;
+    font-family: 'Lato', sans-serif;
+    min-height: 100vh;
+}
+
+/*Header*/
+header{
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.2rem 2.5rem;
+    background: rgba(5,20,35,0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    flex-wrap: wrap;
+}
+.back-btn{
+    padding: 8px 12px;
+    color: floralwhite;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: color 0.3s ease, background 0.3s ease;
+    white-space: nowrap;
+}
+.back-btn:hover{
+    background: rgba(220,180,200,0.6);
+    color: #e8b4cb;
+}
+h1{
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: lightcoral;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 24px rgb(251,202,176);
+}
+
+/*Filter Buttons*/
+.filter-bar{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 2rem 2.5rem 1.5rem;
+}
+.filter-btn{
+    padding: 0.55rem 1.5rem;
+    background: rgba(5,20,35,0.45);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.5);
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    border-radius: 30px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.filter-btn:hover{
+    border-color: rgba(220,180,200,0.5);
+    color: lightcoral;
+    background: rgba(220,180,200,0.1);
+}
+.filter-btn.active{
+    background: rgba(220,180,200,0.22);
+    border-color: rgba(220,180,200,0.6);
+    color: lightcoral;
+    font-weight: bold;
+    box-shadow: 0 0 16px rgba(220,180,200,0.2);
+}
+
+/*Content Area*/
+.content{
+    padding: 0 2.5rem 3rem;
+}
+.placeholder{
+    text-align: center;
+    padding: 4rem 2rem;
+    color: rgba(255,255,255,0.35);
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-size: clamp(0.85rem,2vw,1rem);
+    letter-spacing: 0.08em;
+    border: 1px dashed rgba(255,255,255,0.15);
+    border-radius: 12px;
+    background: rgba(5,20,40,0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/*Table Wrap (Glass card)*/
+.table-wrap{
+    background: rgba(5,20,40,0.55);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 12px;
+    overflow-x: auto;
+    display: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+    width: 100%;
+}
+.table-wrap.visible{
+    display: block;
+}
+
+/*Table*/
+table{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: clamp(0.78rem,1.5vw,0.9rem);
+    min-width: 320px;
+}
+thead{
+    background: rgba(220,180,200,0.1);
+    border-bottom: 1px solid rgba(220,180,200,0.22);
+}
+th{
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: lightsalmon;
+    text-align: left;
+    padding: 0.9rem 1.4rem;
+    white-space: nowrap;
+    text-shadow: 0 0 10px rgba(251,202,176,0.9);
+}
+td{
+    padding: 0.7rem 1.4rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: whitesmoke;
+}
+tr:last-child td{
+    border-bottom: none;
+}
+tbody tr:hover td{
+    background: rgba(255,255,255,0.06);
+    color: azure;
+}
+
+/*Gender Badges*/
+.gender-badge{
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.gender-m{
+    background: rgba(95,168,202,0.18);
+    border: 1px solid rgba(95,168,202,0.4);
+    color: #5fa8ca;
+}
+.gender-f{
+    background: rgba(202,95,168,0.18);
+    border: 1px solid rgba(202,95,168,0.4);
+    color: #ca5fa8;
+}
+.gender-u{
+    background: rgba(202,192,95,0.18);
+    border: 1px solid rgba(202,192,95,0.4);
+    color: #cac05f;
+}
+.loading{
+    text-align: center;
+    padding: 3rem;
+    color: rgba(255,255,255,0.35);
+    font-style: italic;
+    display: none;
+}
+
+/*Responsive Breakpoint*/
+@media (max-width: 768px){
+    header{
+        padding: 1rem 1.2rem;
+    }
+    .filter-bar{
+        padding: 1.5rem 1.2rem 1rem;
+        gap: 0.5rem;
+    }
+    .filter-btn{
+        padding: 0.45rem 1rem;
+        font-size: 0.75rem;
+    }
+    .content{
+        padding: 0 1.2rem 2rem;
+    }
+    th,td{
+        padding: 0.65rem 0.8rem;
+    }
+}
+@media (max-width: 480px){
+    header{
+        padding: 0.9rem 1rem;
+        gap: 0.75rem;
+    }
+    .filter-bar{
+        padding: 1rem 1rem 0.75rem;
+    }
+    .filter-btn{
+        padding: 0.4rem 0.85rem;
+        font-size: 0.72rem;
+    }
+    .content{
+        padding: 0 1rem 2rem;
+    }
+    th,td{
+        padding: 0.5rem 0.6rem;
+        font-size: 0.75rem;
+    }
+    .gender-badge{
+        font-size: 0.62rem;
+        padding: 0.12rem 0.4rem;
+    }
+    .placeholder{
+        padding: 2.5rem 1rem;
+    }
+}

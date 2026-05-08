@@ -19,7 +19,7 @@ liveReloadServer.watch([
     path.join(__dirname,'views'),
     path.join(__dirname,'styles'),
     path.join(__dirname,'assets'),
-    path.join(__dirname,'app.js'),
+    path.join(__dirname,'app.js')
 ]);
 
 //Wait for server to restart, then refresh the browser
@@ -367,11 +367,16 @@ app.get('/watchlist',(req,res)=>{
 });
 
 //Route to fetch Names from all tables in the Name DB
-app.get('/names',(reQ,res)=>{
+app.get('/names',(req,res)=>{   //Just renders the page
+    res.render('names');
+});
+
+//Returns JSON data when a filter button is clicked
+app.get('/fetch-names',(req,res)=>{
     const table=req.query.table;
-    const validTables=['Male','Female','Unisex','Latin','Japanese'];
-    if (!validTables.includes(table)){
-        return res.status(400).json({error:'Invalid table selected'});
+    const vaildTables=['Male','Female','Unisex','Latin','Japanese'];
+    if(!vaildTables.includes(table)){
+        return res.status(400).json({error:'Invalid table selected.'});
     }
     conn.query(`SELECT * FROM Names.${table}`,(err,results)=>{
         if (err){

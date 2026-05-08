@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Names Dictionary</title>
+    <link rel="stylesheet" href="/style8.css">
+</head>
+<body>
+    <header>
+        <a href="/" class="back-btn">Back</a>
+        <h1>My Names Dictionary</h1>
+    </header>
+
+    <div class="filter-bar">
+        <button class="filter-btn" onclick="loadNames('Male',this)">Males</button>
+        <button class="filter-btn" onclick="loadNames('Female',this)">Females</button>
+        <button class="filter-btn" onclick="loadNames('Unisex',this)">Unisex</button>
+        <button class="filter-btn" onclick="loadNames('Latin',this)">Latin Sayings</button>
+        <button class="filter-btn" onclick="loadNames('Japanese',this)">Japanese</button>
+    </div>
+
+    <div class="content">
+        <p class="placeholder" id="placeholder">Select a category above to browse names.</p>
+        <p class="loading" id="loading">Loading...</p>
+        <div class="table-wrap" id="table-wrap">
+            <table id="names-table">
+                <thead id="names-thead"></thead>
+                <tbody id="names-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let activeBtn=null;
+        async function loadNames(table,btn){
+            //Toggle off if same button is clicked again
+            if (activeBtn===btn){
+                btn.classList.remove('active');
+                activeBtn=null;
+                document.getElementById('table-wrap').classList.remove('visible');
+                document.getElementById('placeholder').style.display='block';
+                return;
+            }
+            //Update active button
+            document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+            btn.classList.add('active');
+            activeBtn=btn;
+
+            //Show loading
+            document.getElementById('placeholder').style.display='none';
+            document.getElementById('table-wrap').classList.remove('visible');
+            document.getElementById('loading').style.display='block';
+
+            try{
+                const res=await fetch(`/fetch-names?table=${table}`);
+                if (!res.ok) throw new Error('Failed to fetch');
+                const data=await res.json();
+
+                renderTable(table,data);
+            }catch (err){
+                console.error(err);
+                document.getElementById('loading').style.display='none';
+                document.getElementById('placeholder').style.display='block';
+                document.getElementById('placeholder').textContent='Error loading data. Please try again.';
+            }
+        }
+
+        function renderTable(table,rows){
+            document.getElementById('loading').style.display='none';
+            if(!rows||rows.length===0){
+                document.getElementById('placeholder').style.display='block';
+                document.getElementById('placeholder').textContent='No entries found.';
+                return;
+            }
+            const thead=document.getElementById('names-thead');
+            const tbody=document.getElementById('names-tbody');
+
+            //Build headers based on table type
+            let headers=[];
+            if(table==='Latin'){
+                headers=['Phrase','Meanings'];
+            }else if(table==='Japanese'){
+                headers=['No','Name','Gender','Meanings'];
+            }else{
+                headers=['Name','Meanings'];
+            }
+            thead.innerHTML='<tr>'+headers.map(h=>`<th>${h}</th>`).join('')+'</tr>';
+
+            //Build rows
+            tbody.innerHTML=rows.map(row=>{
+                let cells='';
+                if(table==='Latin'){
+                    cells=`<td>${row.Phrase}</td><td>${row.Meanings}</td>`;
+                }else if(table==='Japanese'){
+                    const gender=row.Gender||'';
+                    let badgeClass='gender-u';
+                    if (gender.toLowerCase().startsWith('m')) badgeClass='gender-m';
+                    else if (gender.toLowerCase().startsWith('f')) badgeClass='gender-f';
+                    cells=`
+                        <td style="color: #555;font-size:0.8rem">${row.No}</td>
+                        <td>${row.Name}</td>
+                        <td><span class="gender-badge ${badgeClass}">${gender}</span></td>
+                        <td>${row.Meanings}</td>`;
+                }else{
+                    cells=`<td>${row.Name}</td><td>${row.Meanings}</td>`;
+                }
+                return `<tr>${cells}</tr>`;
+            }).join('');
+            document.getElementById('table-wrap').classList.add('visible');
+        }
+    </script>
+</body>
+</html>

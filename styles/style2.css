@@ -7,6 +7,10 @@ body,h1,h2,h3,h4,h5,h6,ul,ol,li,form,fieldset,legend{
 body{
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     background-image: url('bg2.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
     color: azure;
     line-height: 1.6;
     display: flex;
