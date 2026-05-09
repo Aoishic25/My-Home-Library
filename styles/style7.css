@@ -45,9 +45,9 @@ h1{
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     font-size: 1.6rem;
     font-weight: bold;
-    color: deepskyblue;
+    color: #ffb380;
     letter-spacing: 0.05em;
-    text-shadow: 0 0 24px rgb(129, 237, 183);
+    text-shadow: 0 0 24px rgb(255, 188, 161);
 }
 
 /*Tabs*/
