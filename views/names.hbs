@@ -79,11 +79,11 @@
             //Build headers based on table type
             let headers=[];
             if(table==='Latin'){
-                headers=['Phrase','Meanings'];
+                headers=['Phrase','Meaning'];
             }else if(table==='Japanese'){
-                headers=['No','Name','Gender','Meanings'];
+                headers=['No','Name','Gender','Meaning(s)'];
             }else{
-                headers=['Name','Meanings'];
+                headers=['Name','Meaning(s)'];
             }
             thead.innerHTML='<tr>'+headers.map(h=>`<th>${h}</th>`).join('')+'</tr>';
 
