@@ -31,8 +31,16 @@
                     <label><input type="radio" name="Type" value="Series" required>Series</label>
                     <label><input type="radio" name="Type" value="Movie" required>Movie</label>
                 </div>
-
-                {{!--Case 2: Foreign key column (dropdown)--}}
+                
+                {{!--Case 2: "Gender" field (radio buttons for Japanese table)--}}
+                {{else if (eq this.Field "Gender")}}
+                <div class="radio-group">
+                    <label><input type="radio" name="Gender" value="Male" required>Male</label>
+                    <label><input type="radio" name="Gender" value="Female" required>Female</label>
+                    <label><input type="radio" name="Gender" value="Unisex" required>Unisex</label>
+                </div>
+                
+                {{!--Case 3: Foreign key column (dropdown)--}}
                 {{else if this.isForeignKey}}
                 <select id="{{this.Field}}" name="{{this.Field}}">
                     <option value="">-- Select --</option>
@@ -40,8 +48,8 @@
                     <option value="{{this}}">{{this}}</option>
                     {{/each}}
                 </select>
-
-                {{!--Case 3: Normal text input--}}
+                
+                {{!--Case 4: Normal text input--}}
                 {{else}}
                 <input type="text" id="{{this.Field}}" name="{{this.Field}}">
                 {{/if}}
