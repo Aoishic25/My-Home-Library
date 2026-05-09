@@ -141,6 +141,19 @@ input[type="radio"] {
     color: rgb(255, 255, 255);
 }
 
+/* ── Gender Radio Colours ── */
+.radio-group input[value="Male"] {
+    accent-color: #5fa8ca;
+}
+ 
+.radio-group input[value="Female"] {
+    accent-color: #ca5fa8;
+}
+ 
+.radio-group input[value="Unisex"] {
+    accent-color: #e6323c;
+}
+
 /*Status Message Styling*/
 #statusMessage {
     margin-top: 10px;
