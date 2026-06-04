@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Lato:wght@300;400;700&display=swap');
- 
 *{
     margin: 0;
     padding: 0;
@@ -7,7 +5,7 @@
 }
 
 body{
-    font-family: 'Lato', 'Gill Sans', sans-serif;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     min-height: 100vh;
     background-image: url('bg4.jpg');
     background-size: cover;
@@ -66,14 +64,14 @@ nav a:hover{
 
 /*Heading*/
 h1{
-    font-family: 'Cinzel', serif;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     text-align: center;
     margin-bottom: 1.8rem;
     font-size: clamp(1.1rem, 2.5vw, 1.5rem);
     color: coral;
     letter-spacing: 0.05em;
     text-shadow:
-        0 0 16px rgba(255, 127, 80, 0.55),
+        0 0 16px rgba(255, 173, 143, 0.677),
         0 0 36px rgba(255, 80, 40, 0.2);
 }
 
@@ -99,7 +97,7 @@ input[type="text"]{
     border: 1px solid rgba(255, 127, 80, 0.3);
     border-radius: 7px;
     font-size: 0.95rem;
-    font-family: 'Lato', sans-serif;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
@@ -119,7 +117,7 @@ select{
     border: 1px solid rgba(255, 127, 80, 0.3);
     border-radius: 7px;
     font-size: 0.95rem;
-    font-family: 'Lato', sans-serif;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
@@ -203,7 +201,7 @@ button{
     padding: 0.8rem;
     background: rgba(255, 69, 0, 0.75);
     color: #fff;
-    font-family: 'Cinzel', serif;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     font-size: 0.88rem;
     letter-spacing: 0.1em;
     border: 1px solid rgba(255, 127, 80, 0.4);
