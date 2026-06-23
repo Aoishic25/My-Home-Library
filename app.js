@@ -11,7 +11,32 @@ const port = 3000;
 const livereload=require('livereload');
 const connectLiveReload=require('connect-livereload');
 const { error } = require('console');
+const { spawn } = require('child_process');
 dotenv.config({ path: './.env' });
+
+//Start PHP server for phpMyAdmin automatically
+const phpServer=spawn('php',['-S','localhost:8000'],{
+    cwd:path.join(__dirname,'phpmyadmin')
+});
+
+phpServer.stdout.on('data',(data)=>{
+    console.log(`phpMyAdmin:${data}`);
+});
+phpServer.stderr.on('data',(data)=>{
+    console.log(`phpMyAdmin:${data}`);
+});
+phpServer.on('data',(data)=>{
+    console.log(`phpMyAdmin server exited with code ${code}`);
+});
+
+//Make sure the PHP server shuts down when the Node app stops
+process.on('exit',()=>{
+    phpServer.kill();
+});
+process.on('SIGINT',()=>{
+    phpServer.kill();
+    process.exit();
+});
 
 //Create livereload server
 const liveReloadServer=livereload.createServer();
