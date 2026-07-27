@@ -134,7 +134,7 @@ app.get('/index', (req, res) => {
         res.render('index', { databases });
     });
 });
-
+// Route to display tables in the selected database
 app.post('/tables', (req, res) => {
     const selectedDB = req.body.database;
 
