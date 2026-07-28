@@ -134,6 +134,7 @@ app.get('/index', (req, res) => {
         res.render('index', { databases });
     });
 });
+
 // Route to display tables in the selected database
 app.post('/tables', (req, res) => {
     const selectedDB = req.body.database;
@@ -148,6 +149,7 @@ app.post('/tables', (req, res) => {
         });
     });
 });
+
 // Route to fetch parent tables and render the dropdown
 app.get('/search', (req, res) => {
     const sql = 'SHOW TABLES FROM Writer';
@@ -409,6 +411,20 @@ app.get('/fetch-names',(req,res)=>{
             return res.status(500).json({error:'Error fetching names'});
         }
         res.json(results);
+    });
+});
+
+// GET — Back button from form.hbs
+app.get('/tables', (req, res) => {
+    const selectedDB = req.query.db;
+    if (!selectedDB) return res.redirect('/index');
+    conn.query(`USE ${selectedDB}`, (err) => {
+        if (err) throw err;
+        conn.query('SHOW TABLES', (err, results) => {
+            if (err) throw err;
+            const tables = results.map((result) => Object.values(result)[0]);
+            res.render('tables', { selectedDB, tables });
+        });
     });
 });
 
