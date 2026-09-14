@@ -150,19 +150,58 @@ Stores author information linked to the `shelf` database via foreign keys across
 
 ## Getting Started
 
-### Prerequisites
+There are two ways to run this project: **Docker** (recommended — works the same on macOS, Windows, and Linux, no local MySQL/PHP install needed) or **native** (Node + a local MySQL server).
 
-- [Node.js](https://nodejs.org/) (v14 or higher recommended)
-- MySQL server running locally
-- phpMyAdmin (optional, included in project)
+### Option A: Docker (recommended, especially for Windows)
 
-### Installation
+**Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) only.
 
 1. Clone the repository:
 
 ```bash
-git clone <your-repo-url>
-cd Sites
+git clone https://github.com/Aoishic25/My-Home-Library.git
+cd My-Home-Library
+```
+
+2. Copy the env template and set a password:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and set `DATABASE_PASSWORD` (this becomes the MySQL root password too — leave `DATABASE_USER=root` and `DATABASE_HOST=db` as-is).
+
+3. Bring your data with you: `docker/db/init/*.sql` is gitignored (this repo is public, and the dump contains your personal library data), so it doesn't come with `git clone`. Copy your seed file into `docker/db/init/` on the new machine yourself — privately, via USB/AirDrop/cloud drive, not through the repo. See [`docker/db/init/README.md`](docker/db/init/README.md) for how to (re)generate it from an existing MySQL install.
+
+4. Start everything:
+
+```bash
+docker compose up
+```
+
+This builds the Node app, starts MySQL seeded from any `.sql` file in `docker/db/init/` (your existing library data), and starts phpMyAdmin — all three linked together.
+
+5. Open:
+   - App: `http://localhost:3000`
+   - phpMyAdmin: `http://localhost:8000` (log in as `root` / the password you set)
+
+To stop: `Ctrl+C`, or `docker compose down` (add `-v` to also wipe the database and reseed from the SQL file next time).
+
+Once the databases are seeded (first run), they persist in a Docker volume across restarts — the seed file is only used the first time.
+
+### Option B: Native (Node.js + local MySQL)
+
+**Prerequisites:**
+
+- [Node.js](https://nodejs.org/) (v14 or higher recommended)
+- MySQL server running locally
+- phpMyAdmin (optional, included in project as `phpmyadmin/`, not tracked in git)
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/Aoishic25/My-Home-Library.git
+cd My-Home-Library
 ```
 
 2. Install dependencies:
@@ -171,7 +210,11 @@ cd Sites
 npm install
 ```
 
-3. Set up your MySQL databases (`shelf`, `Collection`, `Names`, `Writer`) and import your data.
+3. Set up your MySQL databases (`Shelf`, `Collection`, `Names`, `Writer`) and import your data — if you have a seed dump (see [`docker/db/init/README.md`](docker/db/init/README.md)), restore it with:
+
+```bash
+mysql -u root -p < docker/db/init/01-seed.sql
+```
 
 4. Create a `.env` file in the root directory:
 
@@ -179,7 +222,7 @@ npm install
 DATABASE_HOST=localhost
 DATABASE_USER=your_username
 DATABASE_PASSWORD=your_password
-DATABASE=shelf
+DATABASE=Shelf
 ```
 
 5. Start the application:

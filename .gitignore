@@ -2,3 +2,4 @@ node_modules/
 phpmyadmin/
 .env
 .DS_Store
+docker/db/init/*.sql
