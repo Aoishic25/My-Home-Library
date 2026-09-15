@@ -71,15 +71,17 @@ const dbcon = {
     database: process.env.DATABASE
 };
 
-const conn = mysql.createConnection(dbcon);
+const conn = mysql.createPool(dbcon);
 
-// Connecting to database
-conn.connect((err) => {
+// Verify the pool can reach the database (individual queries still get their
+// own connection on demand, so this is just a startup log, not a requirement)
+conn.getConnection((err, connection) => {
     if (err) {
         console.log('Error connecting to database:', err);
         return;
     }
     console.log('Database connected successfully');
+    connection.release();
 });
 
 app.use(bodyParser.urlencoded({ extended: true }));

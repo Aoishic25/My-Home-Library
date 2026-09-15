@@ -14,10 +14,15 @@ services:
     # ports:
     #   - "3306:3306"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DATABASE_PASSWORD}"]
+      # --protocol=tcp forces a real TCP check against port 3306, so this
+      # doesn't report "healthy" against MySQL's brief internal bootstrap
+      # server (which only listens on a local socket) during first-run
+      # initialization.
+      test: ["CMD", "mysqladmin", "ping", "--protocol=tcp", "-h", "127.0.0.1", "-P", "3306", "-uroot", "-p${DATABASE_PASSWORD}"]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
+      start_period: 30s
 
   phpmyadmin:
     image: phpmyadmin:latest
