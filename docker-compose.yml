@@ -7,8 +7,12 @@ services:
     volumes:
       - db-data:/var/lib/mysql
       - ./docker/db/init:/docker-entrypoint-initdb.d:ro
-    ports:
-      - "3306:3306"
+    # No host port published for MySQL — app and phpMyAdmin reach it over
+    # the internal Docker network. Uncomment and pick a free host port
+    # (e.g. "3307:3306") if you want to connect an external tool like
+    # MySQL Workbench to it directly.
+    # ports:
+    #   - "3306:3306"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DATABASE_PASSWORD}"]
       interval: 5s
