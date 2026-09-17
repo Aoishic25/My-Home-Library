@@ -43,6 +43,11 @@ Sites/
 ├── app.js                  # Main application entry point
 ├── package.json            # Project dependencies and scripts
 ├── package-lock.json
+├── Dockerfile              # Builds the Node app image
+├── docker-compose.yml      # App + MySQL + phpMyAdmin, wired together
+├── .env.example            # Template for the required .env values
+├── docker/
+│   └── db/init/            # MySQL seed data (gitignored — see its own README)
 ├── assets/                 # Background images
 │   ├── bg1.jpg – bg5.jpg   # Used across existing pages
 │   ├── bg6.jpg             # Anime/Manga, Watchlist, Book Browser pages
@@ -67,8 +72,8 @@ Sites/
 │   ├── watchlist.hbs       # Watchlist (shows & movies)
 │   ├── names.hbs           # Library of Names
 │   └── books.hbs           # Book Browser
-├── vendor/                 # Third-party libraries
-├── phpmyadmin/             # phpMyAdmin configuration
+├── vendor/                 # Third-party libraries (native/phpMyAdmin setup only)
+├── phpmyadmin/             # Standalone phpMyAdmin install (native setup only, not tracked in git)
 └── node_modules/           # npm dependencies
 ```
 
@@ -185,9 +190,32 @@ This builds the Node app, starts MySQL seeded from any `.sql` file in `docker/db
    - App: `http://localhost:3000`
    - phpMyAdmin: `http://localhost:8000` (log in as `root` / the password you set)
 
-To stop: `Ctrl+C`, or `docker compose down` (add `-v` to also wipe the database and reseed from the SQL file next time).
-
 Once the databases are seeded (first run), they persist in a Docker volume across restarts — the seed file is only used the first time.
+
+#### Everyday use
+
+After the first-time setup above, running it again on any machine is just:
+
+```bash
+docker compose up
+```
+
+To stop it: `Ctrl+C`, or from another terminal, `docker compose down`.
+
+| Want to... | Run |
+|---|---|
+| Run in the background (no terminal tied up) | `docker compose up -d` |
+| Pick up code changes (app.js, views, styles, package.json) | `docker compose up --build` |
+| Reset the database back to the seed file | `docker compose down -v` then `docker compose up` |
+| View logs while running in the background | `docker compose logs -f` |
+
+#### Troubleshooting
+
+- **"port is already allocated"** — something else on your machine (a local MySQL/XAMPP install, another project) is already using that port. `docker-compose.yml` doesn't publish MySQL's port to the host by default for this reason; if you hit this for port 3000 or 8000 instead, either stop the other process or change the host-side port in `docker-compose.yml` (the left number in `"3000:3000"`).
+- **phpMyAdmin login says access denied, or you changed `DATABASE_PASSWORD` and it didn't take effect** — MySQL only reads `MYSQL_ROOT_PASSWORD` (sourced from `DATABASE_PASSWORD`) the *first* time it initializes its data volume. Editing `.env` afterward doesn't retroactively change the running database's password. To apply a new password, either run `docker compose down -v` (wipes and reinitializes — you'll lose anything added since the seed) or log in with the *old* password and run `ALTER USER 'root'@'%' IDENTIFIED BY 'new_password'; FLUSH PRIVILEGES;` in phpMyAdmin's SQL tab.
+- **phpMyAdmin 404s** — go to `http://localhost:8000/` (the root path). The official phpMyAdmin image serves itself there, not at `/phpmyadmin`.
+- Passwords are case-sensitive — double-check exact casing between what you typed and what's in `.env`.
+- Stopping/starting individual containers from the Docker Desktop app's UI does **not** recreate them or re-read `.env` — use the `docker compose` commands above when you've changed configuration.
 
 ### Option B: Native (Node.js + local MySQL)
 
