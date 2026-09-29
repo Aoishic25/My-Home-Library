@@ -12,6 +12,7 @@ A personal web application for cataloguing and browsing a home library collectio
 - [Databases](#databases)
 - [Pages & Routes](#pages--routes)
 - [Getting Started](#getting-started)
+- [Testing](#testing)
 - [Features](#features)
 
 ---
@@ -34,6 +35,7 @@ My Home Library is a Node.js web application that serves as a personal digital c
 | Live Reload | livereload + connect-livereload |
 | Entry Point | `app.js` |
 | Schema whitelist | `lib/schema.js` |
+| Tests | Node's built-in test runner (`node --test`) |
 
 ---
 
@@ -42,6 +44,10 @@ My Home Library is a Node.js web application that serves as a personal digital c
 ```
 Sites/
 ├── app.js                  # Main application entry point
+├── lib/
+│   └── schema.js           # Whitelist of databases/tables/columns allowed in SQL
+├── test/
+│   └── schema.test.js      # Unit tests for lib/schema.js (`npm test`)
 ├── package.json            # Project dependencies and scripts
 ├── package-lock.json
 ├── Dockerfile              # Builds the Node app image
@@ -268,6 +274,29 @@ node app.js
 
 ---
 
+## Testing
+
+```bash
+npm test
+```
+
+Runs the unit tests in `test/` with Node's built-in test runner. There's nothing extra to install and **no database is needed**: the tests use a fake connection pool. Requires Node 18 or newer (the Docker image uses Node 20); Node 14 is fine for running the app but can't run the tests.
+
+**What's covered** — `test/schema.test.js` exercises `lib/schema.js`, the whitelist that every database/table name passes through before it reaches SQL:
+
+- only `Shelf`, `Collection`, `Names` and `Writer` are ever queried for and resolved; `mysql`, `information_schema` and other databases are rejected
+- names match case-insensitively and resolve to their real spelling (needed with `--lower-case-table-names=1`)
+- injection attempts (`Classics; DROP TABLE …`, backticks, quotes, comments), object-prototype keys (`constructor`, `__proto__`) and non-string input all resolve to `null`
+- primary-key (single, composite, none), auto-increment and text-column detection
+- schema caching: reuse within 30 seconds, reload after `invalidate()` or expiry, and load errors surface instead of resolving anything
+- `qualified()` quotes identifiers and escapes embedded backticks
+
+**What isn't:** the Express routes themselves and the queries they run need a live MySQL and aren't covered yet.
+
+**Adding tests:** put new `*.test.js` files in `test/`. To see a test do its job, break the code it guards and confirm it fails.
+
+---
+
 ## Features
 
 - View anime and manga in a tabbed interface with Series/Movie badges and Japanese titles
@@ -276,7 +305,7 @@ node app.js
 - Explore the Library of Names — filter by Male, Female, Unisex, Latin, or Japanese with AJAX table loading; Japanese names include colour-coded gender badges
 - Search: one box that searches titles, authors, anime, manga, names and meanings across all four databases
 - Browse, edit and delete rows in any table (25 per page, sortable, filterable) — tables with a primary key get inline Edit/Delete buttons
-- Safe by construction: database, table and column names are checked against the real schema (`lib/schema.js`) before they reach any SQL, so only `Shelf`, `Collection`, `Names` and `Writer` are reachable
+- Safe by construction: database, table and column names are checked against the real schema (`lib/schema.js`) before they reach any SQL, so only `Shelf`, `Collection`, `Names` and `Writer` are reachable (unit-tested, see [Testing](#testing))
 - Add data to any table via the dynamic form page — supports text inputs, foreign key dropdowns, and radio buttons (Type for anime, Gender for Japanese names)
 - Glassmorphism UI with illustrated background art across all pages
 - Live reload — the browser refreshes automatically when any `.hbs`, `.css`, or `.js` file is saved
