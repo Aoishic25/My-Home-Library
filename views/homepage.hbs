@@ -15,6 +15,7 @@
         <button id="btn4" onclick="openAnimeManga()">Anime & Manga</button>
         <button id="btn5" onclick="openWatchlist()">Watchlist</button>
         <button id="btn6" onclick="openNames()">Names Dictionary</button>
+        <button id="btn7" onclick="openGlobalSearch()">Search Everything</button>
     </div>
     <script>
         function openPhpMyAdmin() {
@@ -37,6 +38,10 @@
             window.location.href="http://localhost:3000/watchlist";
         }
         
+        function openGlobalSearch() {
+            window.location.href="/global-search";
+        }
+
         function openNames() {
             window.location.href="http://localhost:3000/names";
         }

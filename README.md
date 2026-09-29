@@ -33,6 +33,7 @@ My Home Library is a Node.js web application that serves as a personal digital c
 | Styling | CSS (9 stylesheets) |
 | Live Reload | livereload + connect-livereload |
 | Entry Point | `app.js` |
+| Schema whitelist | `lib/schema.js` |
 
 ---
 
@@ -150,6 +151,10 @@ Stores author information linked to the `shelf` database via foreign keys across
 | `/names` | GET | Library of Names page |
 | `/fetch-names` | GET | Returns name data as JSON (AJAX) |
 | `/books` | GET | Book Browser — all 11 shelf genres |
+| `/rows` | GET | Paginated, sortable, filterable view of any table (`?db=&table=&q=&sort=&dir=&page=`) |
+| `/row` | PUT | Update one row, identified by its primary key (JSON body) |
+| `/row` | DELETE | Delete one row, identified by its primary key (JSON body) |
+| `/global-search` | GET | Search every text column of every table (`?q=`) |
 
 ---
 
@@ -253,6 +258,8 @@ DATABASE_PASSWORD=your_password
 DATABASE=Shelf
 ```
 
+Optional: `DATABASE_PORT` (default 3306), `PORT` (default 3000), and `NODE_ENV=production` to disable live reload.
+
 5. Start the application:
 
 ```bash
@@ -270,6 +277,9 @@ node app.js
 - Browse your Watchlist (shows and movies) in a tabbed layout
 - Explore the Library of Names — filter by Male, Female, Unisex, Latin, or Japanese with AJAX table loading; Japanese names include colour-coded gender badges
 - Search books by author using the Writer database with foreign key joins
+- Search everything: one box that searches titles, authors, anime, manga, names and meanings across all four databases
+- Browse, edit and delete rows in any table (25 per page, sortable, filterable) — tables with a primary key get inline Edit/Delete buttons
+- Safe by construction: database, table and column names are checked against the real schema (`lib/schema.js`) before they reach any SQL, so only `Shelf`, `Collection`, `Names` and `Writer` are reachable
 - Add data to any table via the dynamic form page — supports text inputs, foreign key dropdowns, and radio buttons (Type for anime, Gender for Japanese names)
 - Glassmorphism UI with illustrated background art across all pages
 - Live reload — the browser refreshes automatically when any `.hbs`, `.css`, or `.js` file is saved
