@@ -2,6 +2,13 @@ services:
   db:
     image: mysql:8.0
     restart: unless-stopped
+    # The seed dump was created on a case-insensitive OS (macOS/Windows) and its
+    # foreign keys mix cases (`writer`.`c_author`, `Writer`.`CH_Author`, ...).
+    # Linux MySQL is case-sensitive by default, so those keys can't resolve and
+    # every insert into a Shelf book table fails. 1 = store names lowercase and
+    # compare case-insensitively, like the original setup. This can only be set
+    # when the data volume is first created (see README: `docker compose down -v`).
+    command: --lower-case-table-names=1
     environment:
       MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
     volumes:
