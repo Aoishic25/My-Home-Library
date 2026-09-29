@@ -146,10 +146,10 @@ Stores author information linked to the `shelf` database via foreign keys across
 | `/search` | GET | Search books by author |
 | `/fetch-authors` | POST | Fetch author names for dropdown |
 | `/fetch-titles` | POST | Fetch book titles by author |
-| `/anime-manga` | GET | Anime & Manga browser (tabbed) |
+| `/anime-manga` | GET | Anime & Manga browser (tabbed, 25 per page; `?tab=&apage=&mpage=`) |
 | `/watchlist` | GET | Watchlist — Shows & Movies (tabbed) |
 | `/names` | GET | Library of Names page |
-| `/fetch-names` | GET | Returns name data as JSON (AJAX) |
+| `/fetch-names` | GET | Returns one page (50) of names as JSON: `{rows,total,page,pages,size}` (`?table=&page=`) |
 | `/books` | GET | Book Browser — all 11 shelf genres |
 | `/rows` | GET | Paginated, sortable, filterable view of any table (`?db=&table=&q=&sort=&dir=&page=`) |
 | `/row` | PUT | Update one row, identified by its primary key (JSON body) |
@@ -276,6 +276,7 @@ node app.js
 - Browse books across 11 genres via the Book Browser — genre filter buttons load each shelf table on demand
 - View anime and manga in a tabbed interface with Series/Movie badges and Japanese titles
 - Browse your Watchlist (shows and movies) in a tabbed layout
+- Names and Anime/Manga are paginated server-side (50 and 25 per page) with Prev/Next controls
 - Explore the Library of Names — filter by Male, Female, Unisex, Latin, or Japanese with AJAX table loading; Japanese names include colour-coded gender badges
 - Search books by author using the Writer database with foreign key joins
 - Search everything: one box that searches titles, authors, anime, manga, names and meanings across all four databases

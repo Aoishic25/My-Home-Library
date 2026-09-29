@@ -335,24 +335,42 @@ function pickColumns(body, table) {
     return data;
 }
 
-//Route to fetch Anime and Manga titles
-app.get('/anime-manga',(req,res)=>{
-    conn.query(`SELECT * FROM Collection.Anime`,(err,animeResults)=>{
-        if (err){
-            console.error('Error fetching anime:',err);
-            return res.status(500).send('Error fetching anime data');
-        }
-        conn.query(`SELECT * FROM Collection.Manga`,(err,mangaResults)=>{
-            if (err){
-                console.error('Error fetching manga:',err);
-                return res.status(500).send('Error fetching manga data');
-            }
-            res.render('anime-manga',{
-                anime:animeResults,
-                manga:mangaResults
-            });
+//Clamps a requested page number into 1..pages and works out the OFFSET
+function paginate(total, requested, size) {
+    const pages = Math.max(1, Math.ceil(total / size));
+    const page = Math.min(Math.max(1, parseInt(requested, 10) || 1), pages);
+    return { total, size, pages, page, offset: (page - 1) * size, paged: pages > 1, hasPrev: page > 1, hasNext: page < pages };
+}
+
+//Route to fetch Anime and Manga titles, one page of each at a time
+const COLLECTION_PAGE_SIZE = 25;
+app.get('/anime-manga', async (req, res) => {
+    try {
+        const [[{ n: animeTotal }]] = await db.query('SELECT COUNT(*) AS n FROM Collection.Anime');
+        const [[{ n: mangaTotal }]] = await db.query('SELECT COUNT(*) AS n FROM Collection.Manga');
+        const anime = paginate(animeTotal, req.query.apage, COLLECTION_PAGE_SIZE);
+        const manga = paginate(mangaTotal, req.query.mpage, COLLECTION_PAGE_SIZE);
+        const tab = req.query.tab === 'manga' ? 'manga' : 'anime';
+
+        const [animeRows] = await db.query(
+            'SELECT * FROM Collection.Anime ORDER BY No LIMIT ? OFFSET ?', [anime.size, anime.offset]);
+        const [mangaRows] = await db.query(
+            'SELECT * FROM Collection.Manga ORDER BY No LIMIT ? OFFSET ?', [manga.size, manga.offset]);
+
+        //Each pager link keeps the other tab's page so switching tabs doesn't reset it
+        const link = (t, a, m) => `/anime-manga?tab=${t}&apage=${a}&mpage=${m}`;
+        res.render('anime-manga', {
+            anime: animeRows,
+            manga: mangaRows,
+            animeActive: tab === 'anime',
+            mangaActive: tab === 'manga',
+            animePager: { ...anime, prevUrl: link('anime', anime.page - 1, manga.page), nextUrl: link('anime', anime.page + 1, manga.page) },
+            mangaPager: { ...manga, prevUrl: link('manga', anime.page, manga.page - 1), nextUrl: link('manga', anime.page, manga.page + 1) }
         });
-    });
+    } catch (err) {
+        console.error('Error fetching anime/manga:', err);
+        res.status(500).send('Error fetching anime and manga data');
+    }
 });
 
 //Route to fetch Show and Movie titles
@@ -380,20 +398,24 @@ app.get('/names',(req,res)=>{   //Just renders the page
     res.render('names');
 });
 
-//Returns JSON data when a filter button is clicked
-app.get('/fetch-names',(req,res)=>{
-    const table=req.query.table;
-    const vaildTables=['Male','Female','Unisex','Latin','Japanese'];
-    if(!vaildTables.includes(table)){
-        return res.status(400).json({error:'Invalid table selected.'});
+//Returns one page of a names table as JSON when a filter button is clicked
+const NAMES_PAGE_SIZE = 50;
+const NAMES_ORDER = { Male: 'Name', Female: 'Name', Unisex: 'Name', Latin: 'Phrase', Japanese: 'No' };
+app.get('/fetch-names', async (req, res) => {
+    const table = req.query.table;
+    if (!Object.prototype.hasOwnProperty.call(NAMES_ORDER, table)) {
+        return res.status(400).json({ error: 'Invalid table selected.' });
     }
-    conn.query(`SELECT * FROM Names.${table}`,(err,results)=>{
-        if (err){
-            console.error('Error fetching names:',err);
-            return res.status(500).json({error:'Error fetching names'});
-        }
-        res.json(results);
-    });
+    try {
+        const [[{ n }]] = await db.query(`SELECT COUNT(*) AS n FROM Names.${table}`);
+        const p = paginate(n, req.query.page, NAMES_PAGE_SIZE);
+        const [rows] = await db.query(
+            `SELECT * FROM Names.${table} ORDER BY ${NAMES_ORDER[table]} LIMIT ? OFFSET ?`, [p.size, p.offset]);
+        res.json({ rows, total: p.total, page: p.page, pages: p.pages, size: p.size });
+    } catch (err) {
+        console.error('Error fetching names:', err);
+        res.status(500).json({ error: 'Error fetching names' });
+    }
 });
 
 // GET — Back button from form.hbs
