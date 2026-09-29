@@ -166,98 +166,6 @@ async function renderTables(selectedDBInput, res) {
 // Route to display tables in the selected database
 app.post('/tables', (req, res) => renderTables(req.body.database, res));
 
-// Route to fetch parent tables and render the dropdown
-app.get('/search', (req, res) => {
-    const sql = 'SHOW TABLES FROM Writer';
-    conn.query(sql, (err, results) => {
-        if (err) {
-            console.error('Error fetching parent tables:', err);
-            return res.status(500).send('Error fetching parent tables');
-        }
-        // Extract table names
-        const tables = results.map(row => Object.values(row)[0]);
-        res.render('search', { tables });
-    });
-});
-
-// Route to fetch author names from the selected parent table
-app.post('/fetch-authors', (req, res) => {
-    const selectedTable = req.body.table;
-    // Map of tables to their foreign key column names
-    const foreignColumns = {
-        'Author': 'Authname',
-        'Arabia_Author': 'Arname',
-        'Asia_Author': 'Asname',
-        'C_Author': 'Cname',
-        'Egypt_Author': 'Ename',
-        'Folk_Author': 'Fname',
-        'India_Author': 'Iname',
-        'Myth_Author': 'Mname',
-        'Penguin_Author': 'Name',
-        'Sr_Author': 'Srname',
-        'CH_Author': 'Hname'
-    };
-
-    const columnName = foreignColumns[selectedTable];
-    if (!columnName) {
-        return res.status(400).send('Invalid table selected');
-    }
-    const sql = `SELECT ${columnName} FROM Writer.${selectedTable}`;
-    conn.query(sql, (err, results) => {
-        if (err) {
-            console.error('Error fetching authors:', err);
-            return res.status(500).send('Error fetching authors');
-        }
-        // Extract the author names (column values)
-        const authors = results.map(row => Object.values(row)[0]);
-        res.json(authors);
-    });
-});
-
-// Route to fetch book titles from child tables based on the selected author
-app.post('/fetch-titles', (req, res) => {
-    const selectedTable = req.body.table;  // Parent table
-    const selectedAuthor = req.body.author;  // Selected author
-    // Map of child tables to their foreign key columns and parent tables
-    const childTableMapping = {
-        'Egypt_Author': { table: 'AncientEgypt', column: 'E_Writer', titleColumn: 'Title' },
-        'Folk_Author': { table: 'Anthology', column: 'A_Writer', titleColumn: 'Bname' },
-        'Arabia_Author': { table: 'ArabianFantasy', column: 'Arabia_Writer', titleColumn: 'Title' },
-        'Asia_Author': { table: 'AsianFantasy', column: 'Asia_Writer', titleColumn: 'Title' },
-        'C_Author': { table: 'Classics', column: 'C_Writer', titleColumn: 'Bname' },
-        'India_Author': { table: 'Indiabooks', column: 'I_Writer', titleColumn: 'Title' },
-        'Myth_Author': { table: 'MythsRetold', column: 'Myth_Writer', titleColumn: 'Title' },
-        'Penguin_Author': { table: 'PenguinBooks', column: 'Penguin_Writer', titleColumn: 'Bname' },
-        'Sr_Author': { table: 'Series', column: 'Sr_Writer', titleColumn: 'Title' },
-        'Author': { table: 'SingleNovel', column: 'SN_Writer', titleColumn: 'Bname' },
-        'CH_Author': { table: 'ChildhoodReads', column: 'CH_Writer', titleColumn: 'Title' }
-    };
-    // Get child table and column based on the selected parent table
-    const childDetails = childTableMapping[selectedTable];
-    // Logging to check the selectedTable and childDetails
-    console.log('Selected Table:', selectedTable);
-    console.log('Child Details:', childDetails);
-    // If no mapping found for the selected table, return an error
-    if (!childDetails) {
-        console.error('Invalid table or author selected');
-        return res.status(400).send('Invalid table or author selected');
-    }
-    // Build the query using the title column and table
-    const sql = `SELECT ${childDetails.titleColumn} AS Title FROM Shelf.${childDetails.table} WHERE ${childDetails.column} = ?`;
-    // Logging the SQL query to see if it's correct
-    console.log('SQL Query:', sql);
-    // Execute the query
-    conn.query(sql, [selectedAuthor], (err, results) => {
-        if (err) {
-            console.error('Error fetching titles:', err);
-            return res.status(500).send('Error fetching titles');
-        }
-        // Extract the titles from the result
-        const titles = results.map(row => row.Title);
-        res.json(titles);
-    });
-});
-
 //set the writers' list in the form as a dropdown box
 const writerDB='Writer';
 
@@ -581,10 +489,10 @@ function friendlyDbError(err, fallback) {
 // ---------------------------------------------------------------------------
 const GLOBAL_LIMIT = 10;
 
-app.get('/global-search', async (req, res) => {
+app.get('/search', async (req, res) => {
     const q = (req.query.q || '').toString().trim();
     if (q.length < 2) {
-        return res.render('global-search', { q, tooShort: q.length > 0, groups: [], totalHits: 0 });
+        return res.render('search', { q, tooShort: q.length > 0, groups: [], totalHits: 0 });
     }
     try {
         const tables = (await schema.allTables()).filter((t) => t.columns.some((c) => c.isText));
@@ -609,7 +517,7 @@ app.get('/global-search', async (req, res) => {
             };
         }))).filter(Boolean);
 
-        res.render('global-search', {
+        res.render('search', {
             q,
             groups,
             totalHits: groups.reduce((n, g) => n + g.rows.length, 0)
@@ -618,6 +526,12 @@ app.get('/global-search', async (req, res) => {
         console.error('Error in global search:', err);
         res.status(500).send('Error searching');
     }
+});
+
+// Old URL from the previous release of this page
+app.get('/global-search', (req, res) => {
+    const q = req.query.q ? `?q=${encodeURIComponent(req.query.q.toString())}` : '';
+    res.redirect(301, `/search${q}`);
 });
 
 app.listen(port, () => {
