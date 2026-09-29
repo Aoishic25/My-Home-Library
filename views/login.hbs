@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log in</title>
+    <link rel="stylesheet" href="/style2.css">
+</head>
+<body>
+    <nav>
+        <a href="/">Back</a>
+    </nav>
+    <div class="container">
+        <h1>Log in to add or edit data</h1>
+        {{#unless authEnabled}}
+        <p class="login-error">Login is not configured. Set ADMIN_PASSWORD in .env and restart the app.</p>
+        {{/unless}}
+        {{#if error}}<p class="login-error" role="alert">{{error}}</p>{{/if}}
+        <form action="/login" method="post">
+            <input type="hidden" name="next" value="{{next}}">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" autocomplete="username" required autofocus>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" autocomplete="current-password" required>
+            <button type="submit">Log in</button>
+        </form>
+    </div>
+</body>
+</html>

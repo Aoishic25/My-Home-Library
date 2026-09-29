@@ -123,3 +123,30 @@ button:active{
         padding: 15px;
     }
 }
+
+/*Log in / Log out control*/
+.auth{
+    position: absolute;
+    top: 1rem;
+    right: 1.25rem;
+}
+.auth a,
+.auth button{
+    display: inline-block;
+    padding: 6px 16px;
+    margin: 0;
+    font-size: 13px;
+    font-family: inherit;
+    color: aliceblue;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 8px;
+    cursor: pointer;
+}
+.auth a:hover,
+.auth button:hover{
+    background: rgba(255, 255, 255, 0.3);
+    transform: none;
+    box-shadow: none;
+}

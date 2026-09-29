@@ -7,6 +7,13 @@
     <link rel="stylesheet" href="/style1.css">
 </head>
 <body>
+    <div class="auth">
+        {{#if isAdmin}}
+        <form action="/logout" method="post"><button type="submit">Log out</button></form>
+        {{else}}
+        <a href="/login">Log in</a>
+        {{/if}}
+    </div>
     <h1>{{welcomeMessage}}</h1>
     <div class="container">
         <button id="btn1" onclick="openPhpMyAdmin()">{{createDB}}</button>

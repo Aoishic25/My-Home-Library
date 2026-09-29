@@ -63,8 +63,8 @@
             </table>
         </div>
 
-        {{#unless editable}}<p class="sub">This table has no primary key, so rows can't be edited or deleted here.</p>
-        {{/unless}}
+        {{#unless hasPrimaryKey}}<p class="sub">This table has no primary key, so rows can't be edited or deleted here.</p>{{/unless}}
+        {{#if hasPrimaryKey}}{{#unless editable}}<p class="sub"><a href="/login?next={{loginNext}}">Log in</a> to edit or delete rows.</p>{{/unless}}{{/if}}
 
         <div class="pager">
             {{#if hasPrev}}<a class="btn" href="{{prevUrl}}">&larr; Prev</a>{{else}}<span></span>{{/if}}

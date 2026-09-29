@@ -34,6 +34,7 @@ My Home Library is a Node.js web application that serves as a personal digital c
 | Live Reload | livereload + connect-livereload |
 | Entry Point | `app.js` |
 | Schema whitelist | `lib/schema.js` |
+| Login / sessions | `lib/auth.js`, `express-session` |
 
 ---
 
@@ -139,18 +140,20 @@ Stores author information linked to the `shelf` database via foreign keys across
 | Route | Method | Description |
 |---|---|---|
 | `/` | GET | Homepage |
-| `/index` | GET | Database selector |
-| `/tables` | POST | Show tables in selected database |
-| `/form` | POST | Data entry form for selected table |
-| `/submit` | POST | Insert form data into database |
+| `/login` | GET, POST | Admin login form / submit |
+| `/logout` | POST | End the session |
+| `/index` | GET | Database selector *(login required)* |
+| `/tables` | GET, POST | Show tables in selected database *(login required)* |
+| `/form` | POST | Data entry form for selected table *(login required)* |
+| `/submit` | POST | Insert form data into database *(login required)* |
 | `/search` | GET | Search every text column of every table (`?q=`) |
 | `/anime-manga` | GET | Anime & Manga browser (tabbed, 25 per page; `?tab=&apage=&mpage=`) |
 | `/watchlist` | GET | Watchlist — Shows & Movies (tabbed, 25 per page; `?tab=&spage=&mpage=`) |
 | `/names` | GET | Library of Names page |
 | `/fetch-names` | GET | Returns one page (50) of names as JSON: `{rows,total,page,pages,size}` (`?table=&page=`) |
 | `/rows` | GET | Paginated, sortable, filterable view of any table (`?db=&table=&q=&sort=&dir=&page=`) |
-| `/row` | PUT | Update one row, identified by its primary key (JSON body) |
-| `/row` | DELETE | Delete one row, identified by its primary key (JSON body) |
+| `/row` | PUT | Update one row, identified by its primary key (JSON body) *(login required)* |
+| `/row` | DELETE | Delete one row, identified by its primary key (JSON body) *(login required)* |
 | `/global-search` | GET | Redirects to `/search` (old URL) |
 
 ---
@@ -176,7 +179,7 @@ cd My-Home-Library
 cp .env.example .env
 ```
 
-Edit `.env` and set `DATABASE_PASSWORD` (this becomes the MySQL root password too — leave `DATABASE_USER=root` and `DATABASE_HOST=db` as-is).
+Edit `.env` and set `DATABASE_PASSWORD` (this becomes the MySQL root password too — leave `DATABASE_USER=root` and `DATABASE_HOST=db` as-is). Also set `ADMIN_PASSWORD` (your login for adding/editing data — see [Login](#login-for-adding-and-editing-data)).
 
 3. Bring your data with you: `docker/db/init/*.sql` is gitignored (this repo is public, and the dump contains your personal library data), so it doesn't come with `git clone`. Copy your seed file into `docker/db/init/` on the new machine yourself — privately, via USB/AirDrop/cloud drive, not through the repo. See [`docker/db/init/README.md`](docker/db/init/README.md) for how to (re)generate it from an existing MySQL install.
 
@@ -268,6 +271,24 @@ node app.js
 
 ---
 
+## Login for adding and editing data
+
+Browsing and searching are public. Anything that changes data (Add Data, editing, deleting) needs a login.
+
+| Variable | Purpose |
+|---|---|
+| `ADMIN_PASSWORD` | **Required for login.** Pick your own strong password. If it's empty, login is disabled and every write route stays locked. |
+| `ADMIN_USER` | Username (default `admin`) |
+| `SESSION_SECRET` | Signs the login cookie. Any long random string; if omitted, one is generated at startup and you're logged out whenever the app restarts |
+
+Set them in `.env`, then `docker compose up -d` (Docker) or restart `node app.js` (native). Notes:
+
+- Sessions last 8 hours and live in memory, so restarting the app logs you out. Node prints a one-line MemoryStore notice at startup; that's expected for a single-user app.
+- After 5 failed logins from one address, further attempts are refused for 15 minutes (restarting the app clears this).
+- The login cookie is `HttpOnly` and `SameSite=Lax`, but it is **not** marked `Secure`, so it is fine on `localhost`/a trusted network but you should put the app behind HTTPS before exposing it to the internet.
+
+---
+
 ## Features
 
 - View anime and manga in a tabbed interface with Series/Movie badges and Japanese titles
@@ -275,7 +296,8 @@ node app.js
 - Names, Anime/Manga and Watchlist are paginated server-side (50, 25 and 25 per page) with Prev/Next controls
 - Explore the Library of Names — filter by Male, Female, Unisex, Latin, or Japanese with AJAX table loading; Japanese names include colour-coded gender badges
 - Search: one box that searches titles, authors, anime, manga, names and meanings across all four databases
-- Browse, edit and delete rows in any table (25 per page, sortable, filterable) — tables with a primary key get inline Edit/Delete buttons
+- Browse any table (25 per page, sortable, filterable). Logged-in admins also get inline Edit/Delete buttons on tables with a primary key
+- Login for the write routes: adding, editing and deleting data need the admin login; every browse/search page stays public (see [Login](#login-for-adding-and-editing-data))
 - Safe by construction: database, table and column names are checked against the real schema (`lib/schema.js`) before they reach any SQL, so only `Shelf`, `Collection`, `Names` and `Writer` are reachable
 - Add data to any table via the dynamic form page — supports text inputs, foreign key dropdowns, and radio buttons (Type for anime, Gender for Japanese names)
 - Glassmorphism UI with illustrated background art across all pages

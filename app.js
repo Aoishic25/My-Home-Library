@@ -6,6 +6,7 @@ const exphbs = require('express-handlebars');
 const mysql = require('mysql2');
 const path=require('path');
 const { createSchema, qualified } = require('./lib/schema');
+const { createAuth } = require('./lib/auth');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -80,6 +81,10 @@ const dbcon = {
 const conn = mysql.createPool(dbcon);
 const schema = createSchema(conn);
 const db = conn.promise();
+const auth = createAuth();
+if (!auth.enabled) {
+    console.warn('ADMIN_PASSWORD is not set: login is disabled and all write routes are locked.');
+}
 
 // Verify the pool can reach the database (individual queries still get their
 // own connection on demand, so this is just a startup log, not a requirement)
@@ -94,6 +99,7 @@ conn.getConnection((err, connection) => {
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());  // To handle JSON data
+app.use(auth.sessionMiddleware());
 
 
 // Setting static files from 'styles' directory
@@ -130,6 +136,36 @@ app.engine('hbs', handlebars.engine);
 app.set('view engine', 'hbs');
 app.set('views', './views');
 
+// Login / logout (single admin; see lib/auth.js)
+app.get('/login', (req, res) => {
+    if (req.session.isAdmin) return res.redirect(auth.safeNext(req.query.next));
+    res.render('login', { next: auth.safeNext(req.query.next) });
+});
+
+app.post('/login', (req, res) => {
+    const result = auth.attemptLogin(req);
+    const next = auth.safeNext(req.body.next);
+    if (!result.ok) {
+        return res.status(result.status).render('login', { next, error: result.message });
+    }
+    // New session id on login to prevent session fixation
+    req.session.regenerate((err) => {
+        if (err) {
+            console.error('Session error:', err);
+            return res.status(500).render('login', { next, error: 'Could not start a session. Try again.' });
+        }
+        req.session.isAdmin = true;
+        req.session.save(() => res.redirect(next));
+    });
+});
+
+app.post('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.clearCookie('mhl.sid');
+        res.redirect('/');
+    });
+});
+
 // Routes
 app.get('/', (req, res) => {
     res.render('homepage', {
@@ -140,7 +176,7 @@ app.get('/', (req, res) => {
     });
 });
 
-app.get('/index', async (req, res) => {
+app.get('/index', auth.requireAdmin, async (req, res) => {
     try {
         const databases = await schema.databases();
         res.render('index', { databases });
@@ -164,7 +200,7 @@ async function renderTables(selectedDBInput, res) {
 }
 
 // Route to display tables in the selected database
-app.post('/tables', (req, res) => renderTables(req.body.database, res));
+app.post('/tables', auth.requireAdmin, (req, res) => renderTables(req.body.database, res));
 
 //set the writers' list in the form as a dropdown box
 const writerDB='Writer';
@@ -184,7 +220,7 @@ const shelfForeignKeys={
     Sr_Writer:{table:`${writerDB}.Sr_Author`,column:'Srname'}
 };
 
-app.post('/form', async (req, res) => {
+app.post('/form', auth.requireAdmin, async (req, res) => {
     try {
         const table = await schema.resolveTable(req.body.database, req.body.table);
         if (!table) return res.status(400).send('Invalid database or table');
@@ -214,7 +250,7 @@ async function dropdownColumns(table, cols) {
     return out;
 }
 
-app.post('/submit', async (req, res) => {
+app.post('/submit', auth.requireAdmin, async (req, res) => {
     try {
         const table = await schema.resolveTable(req.body.database, req.body.table);
         if (!table) return res.json({ message: 'Invalid database or table', messageType: 'error' });
@@ -337,7 +373,7 @@ app.get('/fetch-names', async (req, res) => {
 });
 
 // GET — Back button from form.hbs
-app.get('/tables', (req, res) => {
+app.get('/tables', auth.requireAdmin, (req, res) => {
     if (!req.query.db) return res.redirect('/index');
     renderTables(req.query.db, res);
 });
@@ -395,7 +431,8 @@ app.get('/rows', async (req, res) => {
             [...params, PAGE_SIZE, (current - 1) * PAGE_SIZE]
         );
 
-        const editable = table.primaryKeys.length > 0;
+        const hasPrimaryKey = table.primaryKeys.length > 0;
+        const editable = hasPrimaryKey && !!req.session.isAdmin;
         const view = rows.map((row) => ({
             key: editable ? JSON.stringify(Object.fromEntries(table.primaryKeys.map((k) => [k, row[k]]))) : '',
             cells: table.columns.map((c) => ({
@@ -420,6 +457,8 @@ app.get('/rows', async (req, res) => {
             })),
             rows: view,
             editable,
+            hasPrimaryKey,
+            loginNext: encodeURIComponent(req.originalUrl),
             q,
             total,
             page: current,
@@ -436,7 +475,7 @@ app.get('/rows', async (req, res) => {
 });
 
 // Update one row, identified by its primary key
-app.put('/row', async (req, res) => {
+app.put('/row', auth.requireAdmin, async (req, res) => {
     try {
         const table = await schema.resolveTable(req.body.database, req.body.table);
         if (!table) return res.status(400).json({ message: 'Invalid database or table', messageType: 'error' });
@@ -464,7 +503,7 @@ app.put('/row', async (req, res) => {
 });
 
 // Delete one row, identified by its primary key
-app.delete('/row', async (req, res) => {
+app.delete('/row', auth.requireAdmin, async (req, res) => {
     try {
         const table = await schema.resolveTable(req.body.database, req.body.table);
         if (!table) return res.status(400).json({ message: 'Invalid database or table', messageType: 'error' });
