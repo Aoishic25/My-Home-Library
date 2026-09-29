@@ -145,7 +145,7 @@ Stores author information linked to the `shelf` database via foreign keys across
 | `/submit` | POST | Insert form data into database |
 | `/search` | GET | Search every text column of every table (`?q=`) |
 | `/anime-manga` | GET | Anime & Manga browser (tabbed, 25 per page; `?tab=&apage=&mpage=`) |
-| `/watchlist` | GET | Watchlist — Shows & Movies (tabbed) |
+| `/watchlist` | GET | Watchlist — Shows & Movies (tabbed, 25 per page; `?tab=&spage=&mpage=`) |
 | `/names` | GET | Library of Names page |
 | `/fetch-names` | GET | Returns one page (50) of names as JSON: `{rows,total,page,pages,size}` (`?table=&page=`) |
 | `/books` | GET | Book Browser — all 11 shelf genres |
@@ -274,7 +274,7 @@ node app.js
 - Browse books across 11 genres via the Book Browser — genre filter buttons load each shelf table on demand
 - View anime and manga in a tabbed interface with Series/Movie badges and Japanese titles
 - Browse your Watchlist (shows and movies) in a tabbed layout
-- Names and Anime/Manga are paginated server-side (50 and 25 per page) with Prev/Next controls
+- Names, Anime/Manga and Watchlist are paginated server-side (50, 25 and 25 per page) with Prev/Next controls
 - Explore the Library of Names — filter by Male, Female, Unisex, Latin, or Japanese with AJAX table loading; Japanese names include colour-coded gender badges
 - Search: one box that searches titles, authors, anime, manga, names and meanings across all four databases
 - Browse, edit and delete rows in any table (25 per page, sortable, filterable) — tables with a primary key get inline Edit/Delete buttons
