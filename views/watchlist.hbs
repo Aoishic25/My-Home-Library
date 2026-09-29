@@ -12,11 +12,11 @@
         <h1>Watchlist</h1>
     </header>
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('cartoons',this)">Cartoons</button>
-        <button class="tab-btn" onclick="switchTab('movies',this)">Movies</button>
+        <button class="tab-btn {{#if showsActive}}active{{/if}}" onclick="switchTab('cartoons',this)">Cartoons</button>
+        <button class="tab-btn {{#if moviesActive}}active{{/if}}" onclick="switchTab('movies',this)">Movies</button>
     </div>
 
-    <div id="tab-cartoons" class="tab-content active">
+    <div id="tab-cartoons" class="tab-content {{#if showsActive}}active{{/if}}">
         <div class="table-wrap">
             {{#if shows.length}}
             <table>
@@ -41,9 +41,18 @@
             <p class="empty">No shows in the watchlist yet</p>
             {{/if}}
         </div>
+        {{#with showsPager}}
+        {{#if paged}}
+        <nav class="pager" aria-label="Cartoons pages">
+            {{#if hasPrev}}<a href="{{prevUrl}}">&larr; Prev</a>{{else}}<span></span>{{/if}}
+            <span>Page {{page}} of {{pages}} &middot; {{total}} total</span>
+            {{#if hasNext}}<a href="{{nextUrl}}">Next &rarr;</a>{{else}}<span></span>{{/if}}
+        </nav>
+        {{/if}}
+        {{/with}}
     </div>
 
-    <div id="tab-movies" class="tab-content">
+    <div id="tab-movies" class="tab-content {{#if moviesActive}}active{{/if}}">
         <div class="table-wrap">
             {{#if movies.length}}
             <table>
@@ -68,6 +77,15 @@
             <p class="empty">No movies in the watchlist yet</p>
             {{/if}}
         </div>
+        {{#with moviesPager}}
+        {{#if paged}}
+        <nav class="pager" aria-label="Movies pages">
+            {{#if hasPrev}}<a href="{{prevUrl}}">&larr; Prev</a>{{else}}<span></span>{{/if}}
+            <span>Page {{page}} of {{pages}} &middot; {{total}} total</span>
+            {{#if hasNext}}<a href="{{nextUrl}}">Next &rarr;</a>{{else}}<span></span>{{/if}}
+        </nav>
+        {{/if}}
+        {{/with}}
     </div>
 
     <script>

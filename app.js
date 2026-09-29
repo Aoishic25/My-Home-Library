@@ -281,24 +281,34 @@ app.get('/anime-manga', async (req, res) => {
     }
 });
 
-//Route to fetch Show and Movie titles
-app.get('/watchlist',(req,res)=>{
-    conn.query(`SELECT * FROM Collection.Shows`,(err,showsResults)=>{
-        if (err){
-            console.error('Error fetching Shows:',err);
-            return res.status(500).send('Error fetching shows data');
-        }
-        conn.query(`SELECT * FROM Collection.Movies`,(err,moviesResults)=>{
-            if (err){
-                console.error('Error fetching movies:',err);
-                return res.status(500).send('Error fetching movies data');
-            }
-            res.render('watchlist',{
-                shows:showsResults,
-                movies:moviesResults
-            });
+//Route to fetch Show and Movie titles, one page of each at a time
+app.get('/watchlist', async (req, res) => {
+    try {
+        const [[{ n: showsTotal }]] = await db.query('SELECT COUNT(*) AS n FROM Collection.Shows');
+        const [[{ n: moviesTotal }]] = await db.query('SELECT COUNT(*) AS n FROM Collection.Movies');
+        const shows = paginate(showsTotal, req.query.spage, COLLECTION_PAGE_SIZE);
+        const movies = paginate(moviesTotal, req.query.mpage, COLLECTION_PAGE_SIZE);
+        const tab = req.query.tab === 'movies' ? 'movies' : 'cartoons';
+
+        const [showRows] = await db.query(
+            'SELECT * FROM Collection.Shows ORDER BY No LIMIT ? OFFSET ?', [shows.size, shows.offset]);
+        const [movieRows] = await db.query(
+            'SELECT * FROM Collection.Movies ORDER BY No LIMIT ? OFFSET ?', [movies.size, movies.offset]);
+
+        //Each pager link keeps the other tab's page so switching tabs doesn't reset it
+        const link = (t, s, m) => `/watchlist?tab=${t}&spage=${s}&mpage=${m}`;
+        res.render('watchlist', {
+            shows: showRows,
+            movies: movieRows,
+            showsActive: tab === 'cartoons',
+            moviesActive: tab === 'movies',
+            showsPager: { ...shows, prevUrl: link('cartoons', shows.page - 1, movies.page), nextUrl: link('cartoons', shows.page + 1, movies.page) },
+            moviesPager: { ...movies, prevUrl: link('movies', shows.page, movies.page - 1), nextUrl: link('movies', shows.page, movies.page + 1) }
         });
-    });
+    } catch (err) {
+        console.error('Error fetching watchlist:', err);
+        res.status(500).send('Error fetching watchlist data');
+    }
 });
 
 //Route to fetch Names from all tables in the Name DB
@@ -358,7 +368,7 @@ function keyWhere(table, key) {
 
 app.get('/rows', async (req, res) => {
     try {
-        const table = await schema.resolveTable(req.query.db || req.query.database, req.query.table);
+        const table = await schema.resolveTable(req.query.db, req.query.table);
         if (!table) return res.status(400).send('Invalid database or table');
 
         const q = (req.query.q || '').toString().trim();
