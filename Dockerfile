@@ -6,9 +6,12 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY app.js ./
+COPY lib ./lib
 COPY views ./views
 COPY styles ./styles
 COPY assets ./assets
+
+ENV NODE_ENV=production
 
 EXPOSE 3000
 
