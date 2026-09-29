@@ -51,7 +51,7 @@ Sites/
 │   └── db/init/            # MySQL seed data (gitignored — see its own README)
 ├── assets/                 # Background images
 │   ├── bg1.jpg – bg5.jpg   # Used across existing pages
-│   ├── bg6.jpg             # Anime/Manga, Watchlist, Book Browser pages
+│   ├── bg6.jpg             # Anime/Manga, Watchlist pages
 │   └── bg8.jpg             # Library of Names page
 ├── styles/                 # CSS stylesheets
 │   ├── style1.css          # Homepage
@@ -62,17 +62,17 @@ Sites/
 │   ├── style6.css          # Anime & Manga page
 │   ├── style7.css          # Watchlist page
 │   ├── style8.css          # Library of Names page
-│   └── style9.css          # Book Browser page
+│   └── style9.css          # Row browser (/rows) page
 ├── views/                  # Handlebars templates
 │   ├── homepage.hbs        # Home page
 │   ├── index.hbs           # Database selector
 │   ├── tables.hbs          # Table list view
 │   ├── form.hbs            # Data entry form
-│   ├── search.hbs          # Author/title search
+│   ├── search.hbs          # Search everything
 │   ├── anime-manga.hbs     # Anime & Manga browser
 │   ├── watchlist.hbs       # Watchlist (shows & movies)
 │   ├── names.hbs           # Library of Names
-│   └── books.hbs           # Book Browser
+│   └── rows.hbs            # Row browser (paginate, edit, delete)
 ├── vendor/                 # Third-party libraries (native/phpMyAdmin setup only)
 ├── phpmyadmin/             # Standalone phpMyAdmin install (native setup only, not tracked in git)
 └── node_modules/           # npm dependencies
@@ -148,7 +148,6 @@ Stores author information linked to the `shelf` database via foreign keys across
 | `/watchlist` | GET | Watchlist — Shows & Movies (tabbed, 25 per page; `?tab=&spage=&mpage=`) |
 | `/names` | GET | Library of Names page |
 | `/fetch-names` | GET | Returns one page (50) of names as JSON: `{rows,total,page,pages,size}` (`?table=&page=`) |
-| `/books` | GET | Book Browser — all 11 shelf genres |
 | `/rows` | GET | Paginated, sortable, filterable view of any table (`?db=&table=&q=&sort=&dir=&page=`) |
 | `/row` | PUT | Update one row, identified by its primary key (JSON body) |
 | `/row` | DELETE | Delete one row, identified by its primary key (JSON body) |
@@ -271,7 +270,6 @@ node app.js
 
 ## Features
 
-- Browse books across 11 genres via the Book Browser — genre filter buttons load each shelf table on demand
 - View anime and manga in a tabbed interface with Series/Movie badges and Japanese titles
 - Browse your Watchlist (shows and movies) in a tabbed layout
 - Names, Anime/Manga and Watchlist are paginated server-side (50, 25 and 25 per page) with Prev/Next controls
