@@ -29,15 +29,51 @@
                 <tbody id="names-tbody"></tbody>
             </table>
         </div>
+        <nav class="pager" id="pager" aria-label="Names pages" style="display:none">
+            <button type="button" id="prev-btn">&larr; Prev</button>
+            <span id="page-info"></span>
+            <button type="button" id="next-btn">Next &rarr;</button>
+        </nav>
     </div>
 
     <script>
         let activeBtn=null;
+        let activeTable=null;
+        let currentPage=1;
+        let totalPages=1;
+
+        document.getElementById('prev-btn').addEventListener('click',()=>fetchPage(currentPage-1));
+        document.getElementById('next-btn').addEventListener('click',()=>fetchPage(currentPage+1));
+
+        async function fetchPage(page){
+            try{
+                const res=await fetch(`/fetch-names?table=${activeTable}&page=${page}`);
+                if (!res.ok) throw new Error('Failed to fetch');
+                const data=await res.json();
+                currentPage=data.page;
+                totalPages=data.pages;
+                renderTable(activeTable,data.rows);
+                const pager=document.getElementById('pager');
+                pager.style.display=data.pages>1?'flex':'none';
+                document.getElementById('page-info').textContent=`Page ${data.page} of ${data.pages} \u00b7 ${data.total} total`;
+                document.getElementById('prev-btn').disabled=data.page<=1;
+                document.getElementById('next-btn').disabled=data.page>=data.pages;
+                document.getElementById('table-wrap').scrollIntoView({behavior:'smooth',block:'start'});
+            }catch (err){
+                console.error(err);
+                document.getElementById('loading').style.display='none';
+                document.getElementById('placeholder').style.display='block';
+                document.getElementById('placeholder').textContent='Error loading data. Please try again.';
+            }
+        }
+
         async function loadNames(table,btn){
             //Toggle off if same button is clicked again
             if (activeBtn===btn){
                 btn.classList.remove('active');
                 activeBtn=null;
+                activeTable=null;
+                document.getElementById('pager').style.display='none';
                 document.getElementById('table-wrap').classList.remove('visible');
                 document.getElementById('placeholder').style.display='block';
                 return;
@@ -52,18 +88,9 @@
             document.getElementById('table-wrap').classList.remove('visible');
             document.getElementById('loading').style.display='block';
 
-            try{
-                const res=await fetch(`/fetch-names?table=${table}`);
-                if (!res.ok) throw new Error('Failed to fetch');
-                const data=await res.json();
-
-                renderTable(table,data);
-            }catch (err){
-                console.error(err);
-                document.getElementById('loading').style.display='none';
-                document.getElementById('placeholder').style.display='block';
-                document.getElementById('placeholder').textContent='Error loading data. Please try again.';
-            }
+            activeTable=table;
+            document.getElementById('pager').style.display='none';
+            await fetchPage(1);
         }
 
         function renderTable(table,rows){

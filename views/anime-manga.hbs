@@ -13,11 +13,11 @@
     </header>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('anime',this)">Anime</button>
-        <button class="tab-btn" onclick="switchTab('manga',this)">Manga</button>
+        <button class="tab-btn {{#if animeActive}}active{{/if}}" onclick="switchTab('anime',this)">Anime</button>
+        <button class="tab-btn {{#if mangaActive}}active{{/if}}" onclick="switchTab('manga',this)">Manga</button>
     </div>
 
-    <div id="tab-anime" class="tab-content active">
+    <div id="tab-anime" class="tab-content {{#if animeActive}}active{{/if}}">
         <div class="table-wrap">
             <table>
                 <thead>
@@ -56,9 +56,18 @@
                 </tbody>
             </table>
         </div>
+        {{#with animePager}}
+        {{#if paged}}
+        <nav class="pager" aria-label="anime pages">
+            {{#if hasPrev}}<a href="{{prevUrl}}">&larr; Prev</a>{{else}}<span></span>{{/if}}
+            <span>Page {{page}} of {{pages}} &middot; {{total}} total</span>
+            {{#if hasNext}}<a href="{{nextUrl}}">Next &rarr;</a>{{else}}<span></span>{{/if}}
+        </nav>
+        {{/if}}
+        {{/with}}
     </div>
 
-    <div id="tab-manga" class="tab-content">
+    <div id="tab-manga" class="tab-content {{#if mangaActive}}active{{/if}}">
         <div class="table-wrap">
             <table>
                 <thead>
@@ -85,6 +94,15 @@
                 </tbody>
             </table>
         </div>
+        {{#with mangaPager}}
+        {{#if paged}}
+        <nav class="pager" aria-label="manga pages">
+            {{#if hasPrev}}<a href="{{prevUrl}}">&larr; Prev</a>{{else}}<span></span>{{/if}}
+            <span>Page {{page}} of {{pages}} &middot; {{total}} total</span>
+            {{#if hasNext}}<a href="{{nextUrl}}">Next &rarr;</a>{{else}}<span></span>{{/if}}
+        </nav>
+        {{/if}}
+        {{/with}}
     </div>
 
     <script>
