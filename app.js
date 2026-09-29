@@ -5,9 +5,10 @@ const bodyParser = require('body-parser');
 const exphbs = require('express-handlebars');
 const mysql = require('mysql2');
 const path=require('path');
+const { createSchema, qualified } = require('./lib/schema');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const livereload=require('livereload');
 const connectLiveReload=require('connect-livereload');
 const { error } = require('console');
@@ -41,24 +42,27 @@ if (process.env.SKIP_PHP_ADMIN !== 'true') {
     });
 }
 
-//Create livereload server
-const liveReloadServer=livereload.createServer();
-liveReloadServer.watch([
-    path.join(__dirname,'views'),
-    path.join(__dirname,'styles'),
-    path.join(__dirname,'assets'),
-    path.join(__dirname,'app.js')
-]);
+//Live reload is a development convenience only
+if (process.env.NODE_ENV !== 'production') {
+    //Create livereload server
+    const liveReloadServer=livereload.createServer();
+    liveReloadServer.watch([
+        path.join(__dirname,'views'),
+        path.join(__dirname,'styles'),
+        path.join(__dirname,'assets'),
+        path.join(__dirname,'app.js')
+    ]);
 
-//Wait for server to restart, then refresh the browser
-liveReloadServer.server.once("connection",()=>{
-    setTimeout(()=>{
-        liveReloadServer.refresh("/");
-    },100);
-});
+    //Wait for server to restart, then refresh the browser
+    liveReloadServer.server.once("connection",()=>{
+        setTimeout(()=>{
+            liveReloadServer.refresh("/");
+        },100);
+    });
 
-//Add middleware to inject the livereload script into the pages
-app.use(connectLiveReload());
+    //Add middleware to inject the livereload script into the pages
+    app.use(connectLiveReload());
+}
 
 // Use cors middleware
 app.use(cors());
@@ -66,12 +70,16 @@ app.use(cors());
 // Database details
 const dbcon = {
     host: process.env.DATABASE_HOST,
+    port: process.env.DATABASE_PORT ? Number(process.env.DATABASE_PORT) : 3306,
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
-    database: process.env.DATABASE
+    database: process.env.DATABASE,
+    dateStrings: true // keep DATE columns as 'YYYY-MM-DD' so edits round-trip cleanly
 };
 
 const conn = mysql.createPool(dbcon);
+const schema = createSchema(conn);
+const db = conn.promise();
 
 // Verify the pool can reach the database (individual queries still get their
 // own connection on demand, so this is just a startup log, not a requirement)
@@ -132,28 +140,31 @@ app.get('/', (req, res) => {
     });
 });
 
-app.get('/index', (req, res) => {
-    conn.query('SHOW DATABASES', (err, results) => {
-        if (err) throw err;
-        const databases = results.map((result) => result.Database);
+app.get('/index', async (req, res) => {
+    try {
+        const databases = await schema.databases();
         res.render('index', { databases });
-    });
+    } catch (err) {
+        console.error('Error listing databases:', err);
+        res.status(500).send('Error listing databases');
+    }
 });
+
+// Shared by the POST (database selector) and GET (Back button from form) variants
+async function renderTables(selectedDBInput, res) {
+    try {
+        const selectedDB = await schema.resolveDb(selectedDBInput);
+        if (!selectedDB) return res.status(400).send('Invalid database selected');
+        const tables = await schema.tables(selectedDB);
+        res.render('tables', { selectedDB, tables });
+    } catch (err) {
+        console.error('Error listing tables:', err);
+        res.status(500).send('Error listing tables');
+    }
+}
 
 // Route to display tables in the selected database
-app.post('/tables', (req, res) => {
-    const selectedDB = req.body.database;
-
-    conn.query(`USE ${selectedDB}`, (err) => {
-        if (err) throw err;
-
-        conn.query('SHOW TABLES', (err, results) => {
-            if (err) throw err;
-            const tables = results.map((result) => Object.values(result)[0]);
-            res.render('tables', { selectedDB, tables });
-        });
-    });
-});
+app.post('/tables', (req, res) => renderTables(req.body.database, res));
 
 // Route to fetch parent tables and render the dropdown
 app.get('/search', (req, res) => {
@@ -265,98 +276,64 @@ const shelfForeignKeys={
     Sr_Writer:{table:`${writerDB}.Sr_Author`,column:'Srname'}
 };
 
-app.post('/form', (req, res) => {
-    const selectedDB = req.body.database;
-    const selectedTable = req.body.table;
+app.post('/form', async (req, res) => {
+    try {
+        const table = await schema.resolveTable(req.body.database, req.body.table);
+        if (!table) return res.status(400).send('Invalid database or table');
 
-    // Fetch all columns in the selected table
-    conn.query(`USE ${selectedDB}`,(err) =>{
-        if(err){
-            console.error('Error:',err);
-            res.status(500).send('Error selecteing database');
-            return;
-        }
-
-        // Fetch all columns in the selected table
-        conn.query(`DESCRIBE ${selectedTable}`,async(err,results) =>{
-            if(err){
-                console.error('Error:',err);
-                res.status(500).send('Error fetching table columns');
-                return;
-            }
-            const columns=results.filter((column) => column.Extra !== 'auto_increment');
-            //Only apply dropdown logic if selected database is 'shelf'
-            if(selectedDB.toLowerCase()==='shelf'){
-                //For each column, if it's a foreign key, fetch dropdown values
-                for (const col of columns){
-                    const fk=shelfForeignKeys[col.Field];
-                    if(fk){
-                        const[rows]=await conn.promise().query(`SELECT ${fk.column} FROM ${fk.table}`);
-                        col.isForeignKey=true;
-                        col.dropdownValues=rows.map(row => row[fk.column]);
-                    }
-                }
-            }
-            res.render('form', { selectedDB, selectedTable, columns });
-        });
-    });
+        const columns = await dropdownColumns(table, table.columns.filter((c) => !c.isAutoIncrement));
+        res.render('form', { selectedDB: table.db, selectedTable: table.name, columns });
+    } catch (err) {
+        console.error('Error building form:', err);
+        res.status(500).send('Error fetching table columns');
+    }
 });
 
-app.post('/submit', (req, res) => {
-    const selectedDB = req.body.database;
-    const selectedTable = req.body.table;
-
-    // Log the incoming form data and the full request body
-    console.log('Received request body:', req.body);
-
-    const formData = { ...req.body };
-    delete formData.database; // Database info is used separately
-    delete formData.table; // Table info is used separately
-
-    // Check if formData contains any fields
-    console.log('Processed formData:', formData);
-
-    // Convert empty strings to null 
-    for (const key in formData) {
-        if (formData[key] === '') {
-            formData[key] = null;
+// Turns schema columns into the {Field, isForeignKey, dropdownValues} shape the
+// form template expects. Only the Shelf database has author foreign keys.
+async function dropdownColumns(table, cols) {
+    const out = [];
+    for (const c of cols) {
+        const col = { Field: c.name };
+        const fk = table.db.toLowerCase() === 'shelf' ? shelfForeignKeys[c.name] : null;
+        if (fk) {
+            const [rows] = await db.query(`SELECT ${fk.column} FROM ${fk.table}`);
+            col.isForeignKey = true;
+            col.dropdownValues = rows.map((row) => row[fk.column]);
         }
+        out.push(col);
     }
+    return out;
+}
 
-    if (Object.keys(formData).length === 0) {
-        return res.json({
-            message: 'No data to insert',
-            messageType: 'error'
-        });
-    }
+app.post('/submit', async (req, res) => {
+    try {
+        const table = await schema.resolveTable(req.body.database, req.body.table);
+        if (!table) return res.json({ message: 'Invalid database or table', messageType: 'error' });
 
-    conn.query(`USE ${selectedDB}`, (err) => {
-        if (err) {
-            console.log('Error:', err);
-            return res.json({
-                message: 'Error selecting database',
-                messageType: 'error'
-            });
+        const formData = pickColumns(req.body, table);
+        if (Object.keys(formData).length === 0) {
+            return res.json({ message: 'No data to insert', messageType: 'error' });
         }
 
-        const sql = `INSERT INTO ${selectedTable} SET ?`;
-        console.log('SQL Query:', sql, formData);
-
-        conn.query(sql, formData, (err, results) => {
-            if (err) {
-                console.log('Error:', err);
-                return res.json({
-                    message: 'Error submitting data',
-                    messageType: 'error'
-                });
-            }
-            res.json({
-                message: 'Data submitted successfully!',
-                messageType: 'success'
-            });
-        });
-    });
+        await db.query(`INSERT INTO ${qualified(table)} SET ?`, [formData]);
+        res.json({ message: 'Data submitted successfully!', messageType: 'success' });
+    } catch (err) {
+        console.error('Error submitting data:', err);
+        res.json({ message: 'Error submitting data', messageType: 'error' });
+    }
 });
+
+// Keeps only real, non-auto-increment columns from a request body; '' becomes NULL
+function pickColumns(body, table) {
+    const data = {};
+    for (const c of table.columns) {
+        if (c.isAutoIncrement || !(c.name in body)) continue;
+        const v = body[c.name];
+        data[c.name] = v === '' ? null : v;
+    }
+    return data;
+}
 
 //Route to fetch Anime and Manga titles
 app.get('/anime-manga',(req,res)=>{
@@ -421,16 +398,204 @@ app.get('/fetch-names',(req,res)=>{
 
 // GET — Back button from form.hbs
 app.get('/tables', (req, res) => {
-    const selectedDB = req.query.db;
-    if (!selectedDB) return res.redirect('/index');
-    conn.query(`USE ${selectedDB}`, (err) => {
-        if (err) throw err;
-        conn.query('SHOW TABLES', (err, results) => {
-            if (err) throw err;
-            const tables = results.map((result) => Object.values(result)[0]);
-            res.render('tables', { selectedDB, tables });
+    if (!req.query.db) return res.redirect('/index');
+    renderTables(req.query.db, res);
+});
+
+// ---------------------------------------------------------------------------
+// Row browser: paginated, searchable, sortable view of any whitelisted table,
+// with edit and delete for tables that have a primary key.
+// ---------------------------------------------------------------------------
+const PAGE_SIZE = 25;
+
+// Escapes LIKE wildcards so a search for "100%" matches literally
+function likePattern(term) {
+    return '%' + term.replace(/[\\%_]/g, '\\$&') + '%';
+}
+
+// Builds the WHERE clause matching one row from its primary-key values.
+// Returns null unless `key` supplies exactly the table's primary-key columns.
+function keyWhere(table, key) {
+    const pks = table.primaryKeys;
+    if (!pks.length || !key || typeof key !== 'object') return null;
+    if (Object.keys(key).length !== pks.length) return null;
+    if (!pks.every((k) => key[k] !== undefined && key[k] !== null)) return null;
+    return {
+        sql: pks.map((k) => `${mysql.escapeId(k)} = ?`).join(' AND '),
+        params: pks.map((k) => key[k])
+    };
+}
+
+app.get('/rows', async (req, res) => {
+    try {
+        const table = await schema.resolveTable(req.query.db || req.query.database, req.query.table);
+        if (!table) return res.status(400).send('Invalid database or table');
+
+        const q = (req.query.q || '').toString().trim();
+        const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+        const sortCol = table.columns.find((c) => c.name === req.query.sort);
+        const dir = req.query.dir === 'desc' ? 'DESC' : 'ASC';
+
+        const params = [];
+        let where = '';
+        const textCols = table.columns.filter((c) => c.isText);
+        if (q && textCols.length) {
+            where = 'WHERE ' + textCols.map((c) => `${mysql.escapeId(c.name)} LIKE ?`).join(' OR ');
+            textCols.forEach(() => params.push(likePattern(q)));
+        }
+
+        const order = sortCol ? `ORDER BY ${mysql.escapeId(sortCol.name)} ${dir}` : '';
+        const from = qualified(table);
+
+        const [[{ total }]] = await db.query(`SELECT COUNT(*) AS total FROM ${from} ${where}`, params);
+        const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+        const current = Math.min(page, pages);
+        const [rows] = await db.query(
+            `SELECT * FROM ${from} ${where} ${order} LIMIT ? OFFSET ?`,
+            [...params, PAGE_SIZE, (current - 1) * PAGE_SIZE]
+        );
+
+        const editable = table.primaryKeys.length > 0;
+        const view = rows.map((row) => ({
+            key: editable ? JSON.stringify(Object.fromEntries(table.primaryKeys.map((k) => [k, row[k]]))) : '',
+            cells: table.columns.map((c) => ({
+                name: c.name,
+                value: row[c.name] === null ? '' : String(row[c.name]),
+                isNull: row[c.name] === null,
+                readonly: c.isAutoIncrement
+            }))
+        }));
+
+        const base = `/rows?db=${encodeURIComponent(table.db)}&table=${encodeURIComponent(table.name)}`
+            + (q ? `&q=${encodeURIComponent(q)}` : '');
+        const sortBase = sortCol ? `&sort=${encodeURIComponent(sortCol.name)}&dir=${dir.toLowerCase()}` : '';
+
+        res.render('rows', {
+            db: table.db,
+            table: table.name,
+            columns: table.columns.map((c) => ({
+                name: c.name,
+                sortUrl: `${base}&sort=${encodeURIComponent(c.name)}&dir=${sortCol && sortCol.name === c.name && dir === 'ASC' ? 'desc' : 'asc'}`,
+                sorted: sortCol && sortCol.name === c.name ? (dir === 'ASC' ? '▲' : '▼') : ''
+            })),
+            rows: view,
+            editable,
+            q,
+            total,
+            page: current,
+            pages,
+            hasPrev: current > 1,
+            hasNext: current < pages,
+            prevUrl: `${base}${sortBase}&page=${current - 1}`,
+            nextUrl: `${base}${sortBase}&page=${current + 1}`
         });
-    });
+    } catch (err) {
+        console.error('Error browsing rows:', err);
+        res.status(500).send('Error fetching rows');
+    }
+});
+
+// Update one row, identified by its primary key
+app.put('/row', async (req, res) => {
+    try {
+        const table = await schema.resolveTable(req.body.database, req.body.table);
+        if (!table) return res.status(400).json({ message: 'Invalid database or table', messageType: 'error' });
+
+        const where = keyWhere(table, req.body.key);
+        if (!where) return res.status(400).json({ message: 'Row cannot be identified', messageType: 'error' });
+
+        const values = pickColumns(req.body.values || {}, table);
+        if (Object.keys(values).length === 0) {
+            return res.status(400).json({ message: 'Nothing to update', messageType: 'error' });
+        }
+
+        const [result] = await db.query(
+            `UPDATE ${qualified(table)} SET ? WHERE ${where.sql} LIMIT 1`,
+            [values, ...where.params]
+        );
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Row not found', messageType: 'error' });
+        }
+        res.json({ message: 'Row updated', messageType: 'success' });
+    } catch (err) {
+        console.error('Error updating row:', err);
+        res.status(500).json({ message: friendlyDbError(err, 'Error updating row'), messageType: 'error' });
+    }
+});
+
+// Delete one row, identified by its primary key
+app.delete('/row', async (req, res) => {
+    try {
+        const table = await schema.resolveTable(req.body.database, req.body.table);
+        if (!table) return res.status(400).json({ message: 'Invalid database or table', messageType: 'error' });
+
+        const where = keyWhere(table, req.body.key);
+        if (!where) return res.status(400).json({ message: 'Row cannot be identified', messageType: 'error' });
+
+        const [result] = await db.query(
+            `DELETE FROM ${qualified(table)} WHERE ${where.sql} LIMIT 1`,
+            where.params
+        );
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Row not found', messageType: 'error' });
+        }
+        res.json({ message: 'Row deleted', messageType: 'success' });
+    } catch (err) {
+        console.error('Error deleting row:', err);
+        res.status(500).json({ message: friendlyDbError(err, 'Error deleting row'), messageType: 'error' });
+    }
+});
+
+// Foreign keys tie books to authors; say so instead of a generic failure
+function friendlyDbError(err, fallback) {
+    if (err.errno === 1451) return 'Other records still reference this row (e.g. an author with books). Remove those first.';
+    if (err.errno === 1452) return 'That value does not exist in the linked table (e.g. unknown author).';
+    if (err.errno === 1062) return 'A row with that key already exists.';
+    return fallback;
+}
+
+// ---------------------------------------------------------------------------
+// Global search across every text column of every table
+// ---------------------------------------------------------------------------
+const GLOBAL_LIMIT = 10;
+
+app.get('/global-search', async (req, res) => {
+    const q = (req.query.q || '').toString().trim();
+    if (q.length < 2) {
+        return res.render('global-search', { q, tooShort: q.length > 0, groups: [], totalHits: 0 });
+    }
+    try {
+        const tables = (await schema.allTables()).filter((t) => t.columns.some((c) => c.isText));
+        const pattern = likePattern(q);
+
+        const groups = (await Promise.all(tables.map(async (t) => {
+            const textCols = t.columns.filter((c) => c.isText);
+            const where = textCols.map((c) => `${mysql.escapeId(c.name)} LIKE ?`).join(' OR ');
+            const params = textCols.map(() => pattern);
+            const [rows] = await db.query(
+                `SELECT * FROM ${qualified(t)} WHERE ${where} LIMIT ?`,
+                [...params, GLOBAL_LIMIT + 1]
+            );
+            if (!rows.length) return null;
+            return {
+                db: t.db,
+                table: t.name,
+                more: rows.length > GLOBAL_LIMIT,
+                link: `/rows?db=${encodeURIComponent(t.db)}&table=${encodeURIComponent(t.name)}&q=${encodeURIComponent(q)}`,
+                columns: t.columns.map((c) => c.name),
+                rows: rows.slice(0, GLOBAL_LIMIT).map((r) => t.columns.map((c) => (r[c.name] === null ? null : String(r[c.name]))))
+            };
+        }))).filter(Boolean);
+
+        res.render('global-search', {
+            q,
+            groups,
+            totalHits: groups.reduce((n, g) => n + g.rows.length, 0)
+        });
+    } catch (err) {
+        console.error('Error in global search:', err);
+        res.status(500).send('Error searching');
+    }
 });
 
 app.listen(port, () => {

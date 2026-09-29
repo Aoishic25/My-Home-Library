@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{table}}</title>
+    <link rel="stylesheet" href="/browse.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/tables?db={{db}}">Back</a>
+        <a href="/global-search">Search everything</a>
+    </nav>
+    <main class="panel">
+        <h1>{{db}} &rsaquo; {{table}}</h1>
+        <p class="sub">{{total}} row(s){{#if q}} matching "{{q}}"{{/if}}</p>
+
+        <form class="filter" method="get" action="/rows">
+            <input type="hidden" name="db" value="{{db}}">
+            <input type="hidden" name="table" value="{{table}}">
+            <input type="search" name="q" value="{{q}}" placeholder="Filter this table...">
+            <button type="submit">Filter</button>
+            {{#if q}}<a class="btn" href="/rows?db={{db}}&table={{table}}">Clear</a>{{/if}}
+        </form>
+
+        <div id="status" role="status"></div>
+
+        <div class="table-wrap">
+        <table data-db="{{db}}" data-table="{{table}}">
+            <thead>
+                <tr>
+                    {{#each columns}}
+                    <th><a href="{{this.sortUrl}}">{{this.name}} {{this.sorted}}</a></th>
+                    {{/each}}
+                    {{#if editable}}<th class="actions">Actions</th>{{/if}}
+                </tr>
+            </thead>
+            <tbody>
+                {{#each rows}}
+                <tr data-key="{{this.key}}">
+                    {{#each this.cells}}
+                    <td data-col="{{this.name}}" data-readonly="{{this.readonly}}" data-value="{{this.value}}" data-null="{{this.isNull}}">{{#if this.isNull}}<span class="null">&mdash;</span>{{else}}{{this.value}}{{/if}}</td>
+                    {{/each}}
+                    {{#if ../editable}}
+                    <td class="actions">
+                        <button type="button" class="edit">Edit</button>
+                        <button type="button" class="save" hidden>Save</button>
+                        <button type="button" class="cancel" hidden>Cancel</button>
+                        <button type="button" class="delete danger">Delete</button>
+                    </td>
+                    {{/if}}
+                </tr>
+                {{else}}
+                <tr><td colspan="99" class="empty">No rows found.</td></tr>
+                {{/each}}
+            </tbody>
+        </table>
+        </div>
+
+        {{#unless editable}}<p class="sub">This table has no primary key, so rows can't be edited or deleted here.</p>{{/unless}}
+
+        <div class="pager">
+            {{#if hasPrev}}<a class="btn" href="{{prevUrl}}">&larr; Prev</a>{{else}}<span></span>{{/if}}
+            <span>Page {{page}} of {{pages}}</span>
+            {{#if hasNext}}<a class="btn" href="{{nextUrl}}">Next &rarr;</a>{{else}}<span></span>{{/if}}
+        </div>
+    </main>
+
+    <script>
+        (function () {
+            var table = document.querySelector('table');
+            var status = document.getElementById('status');
+
+            function show(msg, ok) {
+                status.textContent = msg;
+                status.className = ok ? 'success' : 'error';
+            }
+
+            function send(method, body) {
+                return fetch('/row', {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(Object.assign({ database: table.dataset.db, table: table.dataset.table }, body))
+                }).then(function (r) { return r.json(); });
+            }
+
+            function setEditing(tr, on) {
+                tr.classList.toggle('editing', on);
+                tr.querySelector('.edit').hidden = on;
+                tr.querySelector('.delete').hidden = on;
+                tr.querySelector('.save').hidden = !on;
+                tr.querySelector('.cancel').hidden = !on;
+            }
+
+            function startEdit(tr) {
+                tr.querySelectorAll('td[data-col]').forEach(function (td) {
+                    if (td.dataset.readonly === 'true') return;
+                    var input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = td.dataset.null === 'true' ? '' : td.dataset.value;
+                    td.textContent = '';
+                    td.appendChild(input);
+                });
+                setEditing(tr, true);
+            }
+
+            table.addEventListener('click', function (e) {
+                var btn = e.target.closest('button');
+                if (!btn) return;
+                var tr = btn.closest('tr');
+                var key = JSON.parse(tr.dataset.key);
+
+                if (btn.classList.contains('edit')) return startEdit(tr);
+                if (btn.classList.contains('cancel')) return location.reload();
+
+                if (btn.classList.contains('save')) {
+                    var values = {};
+                    tr.querySelectorAll('td[data-col] input').forEach(function (i) {
+                        values[i.parentNode.dataset.col] = i.value;
+                    });
+                    send('PUT', { key: key, values: values }).then(function (d) {
+                        if (d.messageType === 'success') return location.reload();
+                        show(d.message, false);
+                    }).catch(function () { show('Error saving the row', false); });
+                }
+
+                if (btn.classList.contains('delete')) {
+                    if (!confirm('Delete this row permanently?')) return;
+                    send('DELETE', { key: key }).then(function (d) {
+                        if (d.messageType === 'success') return location.reload();
+                        show(d.message, false);
+                    }).catch(function () { show('Error deleting the row', false); });
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

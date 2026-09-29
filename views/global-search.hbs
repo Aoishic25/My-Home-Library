@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Everything</title>
+    <link rel="stylesheet" href="/browse.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/">Home</a>
+    </nav>
+    <main class="panel">
+        <h1>Search everything</h1>
+        <form class="filter" method="get" action="/global-search">
+            <input type="search" name="q" value="{{q}}" placeholder="Title, author, name, meaning..." autofocus>
+            <button type="submit">Search</button>
+        </form>
+
+        {{#if tooShort}}<p class="sub">Type at least 2 characters.</p>{{/if}}
+        {{#if q}}{{#unless tooShort}}
+        <p class="sub">{{totalHits}} match(es) shown across {{groups.length}} table(s) for "{{q}}"</p>
+        {{/unless}}{{/if}}
+
+        {{#each groups}}
+        <section class="group">
+            <h2>{{this.db}} &rsaquo; {{this.table}}</h2>
+            <div class="table-wrap">
+            <table>
+                <thead><tr>{{#each this.columns}}<th>{{this}}</th>{{/each}}</tr></thead>
+                <tbody>
+                    {{#each this.rows}}
+                    <tr>{{#each this}}<td>{{#if this}}{{this}}{{else}}<span class="null">&mdash;</span>{{/if}}</td>{{/each}}</tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            </div>
+            <a class="btn" href="{{this.link}}">{{#if this.more}}See all matches{{else}}Open in table view{{/if}} &rarr;</a>
+        </section>
+        {{else}}
+        {{#if q}}{{#unless tooShort}}<p class="empty">Nothing found.</p>{{/unless}}{{/if}}
+        {{/each}}
+    </main>
+</body>
+</html>
