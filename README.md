@@ -143,9 +143,7 @@ Stores author information linked to the `shelf` database via foreign keys across
 | `/tables` | POST | Show tables in selected database |
 | `/form` | POST | Data entry form for selected table |
 | `/submit` | POST | Insert form data into database |
-| `/search` | GET | Search books by author |
-| `/fetch-authors` | POST | Fetch author names for dropdown |
-| `/fetch-titles` | POST | Fetch book titles by author |
+| `/search` | GET | Search every text column of every table (`?q=`) |
 | `/anime-manga` | GET | Anime & Manga browser (tabbed, 25 per page; `?tab=&apage=&mpage=`) |
 | `/watchlist` | GET | Watchlist — Shows & Movies (tabbed) |
 | `/names` | GET | Library of Names page |
@@ -154,7 +152,7 @@ Stores author information linked to the `shelf` database via foreign keys across
 | `/rows` | GET | Paginated, sortable, filterable view of any table (`?db=&table=&q=&sort=&dir=&page=`) |
 | `/row` | PUT | Update one row, identified by its primary key (JSON body) |
 | `/row` | DELETE | Delete one row, identified by its primary key (JSON body) |
-| `/global-search` | GET | Search every text column of every table (`?q=`) |
+| `/global-search` | GET | Redirects to `/search` (old URL) |
 
 ---
 
@@ -278,8 +276,7 @@ node app.js
 - Browse your Watchlist (shows and movies) in a tabbed layout
 - Names and Anime/Manga are paginated server-side (50 and 25 per page) with Prev/Next controls
 - Explore the Library of Names — filter by Male, Female, Unisex, Latin, or Japanese with AJAX table loading; Japanese names include colour-coded gender badges
-- Search books by author using the Writer database with foreign key joins
-- Search everything: one box that searches titles, authors, anime, manga, names and meanings across all four databases
+- Search: one box that searches titles, authors, anime, manga, names and meanings across all four databases
 - Browse, edit and delete rows in any table (25 per page, sortable, filterable) — tables with a primary key get inline Edit/Delete buttons
 - Safe by construction: database, table and column names are checked against the real schema (`lib/schema.js`) before they reach any SQL, so only `Shelf`, `Collection`, `Names` and `Writer` are reachable
 - Add data to any table via the dynamic form page — supports text inputs, foreign key dropdowns, and radio buttons (Type for anime, Gender for Japanese names)
